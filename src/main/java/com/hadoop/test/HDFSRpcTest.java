@@ -48,17 +48,21 @@ public class HDFSRpcTest implements Tool {
             LOG.error("Unable to parse arguments due to error: ", e);
             return 1;
         }
-        String value = parsedOpts.getValue(ConfigOption.BASE_DIR.getOpt());
-        System.out.println("baseDir=" + value);
-        List<String> argList = parsedOpts.getParsedData().getArgList();
-        for (String arg : argList) {
-            System.out.println("arg: " + arg);
-        }
+        String baseDir = parsedOpts.getValue(ConfigOption.BASE_DIR.getOpt());
+        System.out.println("baseDir=" + baseDir);
+        String operations = parsedOpts.getValue(ConfigOption.OPERATIONS.getOpt());
+        System.out.println("operations=" + operations);
+        int fileSize = parsedOpts.getValueAsInt(ConfigOption.FILE_SIZE.getOpt(), ConfigOption.FILE_SIZE.getDefaultValue());
+        System.out.println("fileSize=" + fileSize + " MB");
+        int opsPerMapper = parsedOpts.getValueAsInt(ConfigOption.OPS_PER_MAPPER.getOpt(), ConfigOption.OPS_PER_MAPPER.getDefaultValue());
+        System.out.println("opsPerMapper=" + opsPerMapper);
+        int numMaps = parsedOpts.getValueAsInt(ConfigOption.MAPS.getOpt(), 2);
+        System.out.println("numMaps=" + numMaps);
         JobClient.runJob(getJob(parsedOpts));
         return 0;
     }
 
-    private JobConf getJob(ArgumentParser.ParsedOutput opts) throws IOException, ParseException {
+    private JobConf getJob(ArgumentParser.ParsedOutput opts) {
         JobConf job = new JobConf(base, HDFSRpcTest.class);
         job.setInputFormat(DummyInputFormat.class);
         FileOutputFormat.setOutputPath(job, opts.getOutputPath());
@@ -71,6 +75,12 @@ public class HDFSRpcTest implements Tool {
         TextOutputFormat.setCompressOutput(job, false);
         job.setNumReduceTasks(opts.getValueAsInt(ConfigOption.REDUCES.getOpt(), 1));
         job.setNumMapTasks(opts.getValueAsInt(ConfigOption.MAPS.getOpt(), 2));
+        
+        job.set(ConfigOption.BASE_DIR.getCfgOption(), opts.getValue(ConfigOption.BASE_DIR.getOpt(), ConfigOption.BASE_DIR.getDefaultValue()));
+        job.set(ConfigOption.OPERATIONS.getCfgOption(), opts.getValue(ConfigOption.OPERATIONS.getOpt(), ConfigOption.OPERATIONS.getDefaultValue()));
+        job.setInt(ConfigOption.FILE_SIZE.getCfgOption(), opts.getValueAsInt(ConfigOption.FILE_SIZE.getOpt(), ConfigOption.FILE_SIZE.getDefaultValue()));
+        job.setInt(ConfigOption.OPS_PER_MAPPER.getCfgOption(), opts.getValueAsInt(ConfigOption.OPS_PER_MAPPER.getOpt(), ConfigOption.OPS_PER_MAPPER.getDefaultValue()));
+        
         return job;
     }
 

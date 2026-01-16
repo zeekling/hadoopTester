@@ -18,6 +18,7 @@
 
 package com.hadoop.test;
 
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -45,6 +46,9 @@ public class SliveMapper extends MapReduceBase implements
 
     private FileSystem filesystem;
     private int taskId;
+    private HdfsOperation operation;
+    private String[] operations;
+    private int opsPerMapper;
 
     /*
      * (non-Javadoc)
@@ -56,18 +60,29 @@ public class SliveMapper extends MapReduceBase implements
     @Override // MapReduceBase
     public void configure(JobConf conf) {
         try {
-            filesystem = new Path(conf.get(ConfigOption.BASE_DIR.getCfgOption())).getFileSystem(conf);
+            String baseDir = conf.get(ConfigOption.BASE_DIR.getCfgOption(), ConfigOption.BASE_DIR.getDefaultValue());
+            filesystem = new Path(baseDir).getFileSystem(conf);
+            
+            int fileSize = conf.getInt(ConfigOption.FILE_SIZE.getCfgOption(), ConfigOption.FILE_SIZE.getDefaultValue());
+            
+            if (conf.get(MRJobConfig.TASK_ATTEMPT_ID) != null) {
+                this.taskId = TaskAttemptID.forName(conf.get(MRJobConfig.TASK_ATTEMPT_ID))
+                        .getTaskID().getId();
+            } else {
+                this.taskId = TaskAttemptID.forName(conf.get("mapred.task.id"))
+                        .getTaskID().getId();
+            }
+            
+            operation = new HdfsOperation(filesystem, baseDir, taskId, fileSize);
+            
+            String opsStr = conf.get(ConfigOption.OPERATIONS.getCfgOption(), ConfigOption.OPERATIONS.getDefaultValue());
+            operations = opsStr.split(",");
+            
+            opsPerMapper = conf.getInt(ConfigOption.OPS_PER_MAPPER.getCfgOption(), ConfigOption.OPS_PER_MAPPER.getDefaultValue());
+            
         } catch (Exception e) {
             LOG.error("Unable to setup slive " + StringUtils.stringifyException(e));
             throw new RuntimeException("Unable to setup slive configuration", e);
-        }
-        if (conf.get(MRJobConfig.TASK_ATTEMPT_ID) != null) {
-            this.taskId = TaskAttemptID.forName(conf.get(MRJobConfig.TASK_ATTEMPT_ID))
-                    .getTaskID().getId();
-        } else {
-            // So that branch-1/0.20 can run this same code as well
-            this.taskId = TaskAttemptID.forName(conf.get("mapred.task.id"))
-                    .getTaskID().getId();
         }
     }
 
@@ -98,6 +113,23 @@ public class SliveMapper extends MapReduceBase implements
                     Reporter reporter) throws IOException {
         logAndSetStatus(reporter, "Running slive mapper for dummy key " + key
                 + " and dummy value " + value);
-
+        
+        int opIndex = 0;
+        for (int i = 0; i < opsPerMapper; i++) {
+            String opType = operations[opIndex % operations.length];
+            OperationOutput result = operation.execute(opType, i);
+            
+            Text outKey = result.getKey();
+            Text outValue = result.getOutputValue();
+            output.collect(outKey, outValue);
+            
+            if ((i + 1) % 100 == 0) {
+                logAndSetStatus(reporter, "Completed " + (i + 1) + " operations");
+            }
+            
+            opIndex++;
+        }
+        
+        logAndSetStatus(reporter, "Completed all " + opsPerMapper + " operations");
     }
 }

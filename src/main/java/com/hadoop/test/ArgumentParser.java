@@ -25,6 +25,11 @@ public class ArgumentParser {
         cliopt.addOption(ConfigOption.MAPS);
         cliopt.addOption(ConfigOption.REDUCES);
         cliopt.addOption(ConfigOption.BASE_DIR);
+        cliopt.addOption(ConfigOption.OPERATIONS);
+        cliopt.addOption(ConfigOption.FILE_SIZE);
+        cliopt.addOption(ConfigOption.FILE_COUNT);
+        cliopt.addOption(ConfigOption.OPS_PER_MAPPER);
+        cliopt.addOption(ConfigOption.DIR_COUNT);
         cliopt.addOption(ConfigOption.HELP);
         return cliopt;
     }
@@ -93,6 +98,18 @@ public class ArgumentParser {
             }
             return parsedData.getOptionValue(optName);
         }
+
+        String getValue(String optName, String defaultValue) {
+            if (parsedData == null) {
+                return defaultValue;
+            }
+            String optionValue = parsedData.getOptionValue(optName);
+            if (optionValue == null) {
+                return defaultValue;
+            }
+            return optionValue;
+        }
+
 
         int getValueAsInt(String optName, int defaultValue) {
             String value = getValue(optName);

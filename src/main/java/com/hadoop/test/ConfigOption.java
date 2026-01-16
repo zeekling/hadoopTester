@@ -17,7 +17,17 @@ public class ConfigOption<T> extends Option {
     static final ConfigOption<String> BASE_DIR = new ConfigOption<String>("baseDir", true, "Base directory path", PREFIX + ".base.dir",
             "/test/hdfsrpc");
 
-    static final Option HELP = new Option("help", false, "Usage information");
+    static final ConfigOption<String> OPERATIONS = new ConfigOption<String>("operations", true, "Operations to run (comma separated): mkdir,write,read,delete_dir,delete_file,ls", PREFIX + ".operations", "mkdir,write,read,delete_dir,delete_file,ls");
+
+    static final ConfigOption<Integer> FILE_SIZE = new ConfigOption<Integer>("fileSize", true, "File size in MB", PREFIX + ".file.size", 10);
+
+    static final ConfigOption<Integer> FILE_COUNT = new ConfigOption<Integer>("fileCount", true, "Number of files per operation", PREFIX + ".file.count", 100);
+
+    static final ConfigOption<Integer> OPS_PER_MAPPER = new ConfigOption<Integer>("opsPerMapper", true, "Operations per mapper", PREFIX + ".ops.per.mapper", 1000);
+
+    static final ConfigOption<Integer> DIR_COUNT = new ConfigOption<Integer>("dirCount", true, "Number of directories per operation", PREFIX + ".dir.count", 10);
+
+    static final Option HELP = new Option("h", "help", false, "Usage information");
 
 
     /**
