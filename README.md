@@ -107,10 +107,27 @@ mvn exec:java -Dexec.mainClass="com.hadoop.test.HDFSRpcTest" \
 
 ## 输出结果
 
-测试结果将输出到指定的输出目录（`--baseDir`），包含：
-- 操作类型统计
-- 操作耗时统计
-- 错误信息
+测试结果由 Reducer 汇总统计，输出格式为：
+```
+<操作类型>    count=<操作次数>, total=<总耗时>ms, avg=<平均耗时>ms, min=<最小耗时>ms, max=<最大耗时>ms
+```
+
+### 输出示例
+```
+mkdir    count=10000, total=5000ms, avg=0ms, min=0ms, max=50ms
+write    count=10000, total=120000ms, avg=12ms, min=5ms, max=100ms
+read     count=10000, total=80000ms, avg=8ms, min=3ms, max=80ms
+delete_dir    count=10000, total=6000ms, avg=0ms, min=0ms, max=60ms
+delete_file    count=10000, total=4000ms, avg=0ms, min=0ms, max=40ms
+ls    count=10000, total=30000ms, avg=3ms, min=1ms, max=30ms
+```
+
+### 统计指标说明
+- **count**: 该操作执行的总次数
+- **total**: 所有操作的总耗时（毫秒）
+- **avg**: 平均每次操作的耗时（毫秒）
+- **min**: 最快的一次操作耗时（毫秒）
+- **max**: 最慢的一次操作耗时（毫秒）
 
 ## 系统要求
 
