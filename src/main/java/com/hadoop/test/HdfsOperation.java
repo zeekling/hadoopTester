@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class HdfsOperation {
 
@@ -21,12 +24,28 @@ public class HdfsOperation {
     private final String baseDir;
     private final int taskId;
     private final int fileSize;
+    final ExecutorService executorService;
 
     public HdfsOperation(FileSystem fs, String baseDir, int taskId, int fileSize) {
+        this(fs, baseDir, taskId, fileSize, 10);
+    }
+
+    public HdfsOperation(FileSystem fs, String baseDir, int taskId, int fileSize, int threadPoolSize) {
         this.fs = fs;
         this.baseDir = baseDir;
         this.taskId = taskId;
         this.fileSize = fileSize;
+        this.executorService = Executors.newFixedThreadPool(threadPoolSize);
+    }
+
+    public void shutdown() {
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
+    }
+
+    public CompletableFuture<OperationOutput> executeAsync(String operationType, int index) {
+        return CompletableFuture.supplyAsync(() -> execute(operationType, index), executorService);
     }
 
     public OperationOutput execute(String operationType, int index) {
@@ -107,7 +126,7 @@ public class HdfsOperation {
         Path dirPath = new Path(baseDir + "/write/" + taskId);
         FileStatus[] statuses = fs.listStatus(dirPath);
         long duration = System.currentTimeMillis() - startTime;
-        return new OperationOutput(OperationOutput.OutputType.INTEGER, "ls", "count", statuses.length, 1);
+        return new OperationOutput(OperationOutput.OutputType.LONG, "ls", "duration", duration, 1);
     }
 
     private byte[] generateData(int size) {

@@ -30,6 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * The slive class which sets up the mapper to be used which itself will receive
@@ -66,7 +69,8 @@ public class SliveMapper extends MapReduceBase implements
                         .getTaskID().getId();
             }
 
-            operation = new HdfsOperation(filesystem, baseDir, taskId, fileSize);
+            int threadPoolSize = conf.getInt(ConfigOption.THREAD_POOL_SIZE.getCfgOption(), ConfigOption.THREAD_POOL_SIZE.getDefaultValue());
+            operation = new HdfsOperation(filesystem, baseDir, taskId, fileSize, threadPoolSize);
 
             String opsStr = conf.get(ConfigOption.OPERATIONS.getCfgOption(), ConfigOption.OPERATIONS.getDefaultValue());
             operations = opsStr.split(",");
@@ -90,24 +94,39 @@ public class SliveMapper extends MapReduceBase implements
         logAndSetStatus(reporter, "Running slive mapper for dummy key " + key
                 + " and dummy value " + value);
 
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        int[] completedOps = {0};
+
         int opIndex = 0;
         for (int i = 0; i < opsPerMapper; i++) {
             String opType = operations[opIndex % operations.length];
-            OperationOutput result = operation.execute(opType, i);
+            final int currentIndex = i;
 
-            long duration = Long.parseLong(result.getValue().toString());
+            CompletableFuture<Void> future = operation.executeAsync(opType, currentIndex)
+                .thenAccept(result -> {
+                    try {
+                        long duration = Long.parseLong(result.getValue().toString());
+                        String opKey = opType;
+                        String opValue = String.valueOf(duration);
+                        output.collect(new Text(opKey), new Text(opValue));
 
-            String opKey = opType;
-            String opValue = String.valueOf(duration);
+                        synchronized (completedOps) {
+                            completedOps[0]++;
+                            if (completedOps[0] % 100 == 0) {
+                                logAndSetStatus(reporter, "Completed " + completedOps[0] + " operations");
+                            }
+                        }
+                    } catch (Exception e) {
+                        LOG.error("Error processing result for operation " + opType + " at index " + currentIndex, e);
+                    }
+                });
 
-            output.collect(new Text(opKey), new Text(opValue));
-
-            if ((i + 1) % 100 == 0) {
-                logAndSetStatus(reporter, "Completed " + (i + 1) + " operations");
-            }
-
+            futures.add(future);
             opIndex++;
         }
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        operation.shutdown();
 
         logAndSetStatus(reporter, "Completed all " + opsPerMapper + " operations");
     }

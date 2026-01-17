@@ -19,6 +19,7 @@
   - 文件大小（MB）
   - 每个 Mapper 的操作次数
   - 操作类型列表
+  - 异步线程池大小
 
 - 结果统计：
   - 通过 Reducer 汇总统计结果
@@ -41,6 +42,7 @@ mvn exec:java -Dexec.mainClass="com.hadoop.test.HDFSRpcTest" \
                --reduces 1 \
                --fileSize 10 \
                --opsPerMapper 1000 \
+               --threadPoolSize 10 \
                --operations mkdir,write,read,delete_dir,delete_file,ls"
 ```
 
@@ -56,6 +58,7 @@ mvn exec:java -Dexec.mainClass="com.hadoop.test.HDFSRpcTest" \
 | `--opsPerMapper` | 每个 Mapper 的操作次数 | 1000 |
 | `--fileCount` | 每个操作的文件数量 | 100 |
 | `--dirCount` | 每个操作的目录数量 | 10 |
+| `--threadPoolSize` | 异步操作线程池大小 | 10 |
 | `--help` | 显示帮助信息 | - |
 
 ### 操作类型

@@ -158,12 +158,28 @@ public class SliveMapperTest {
     public void testConfigureWithNullBaseDir() throws Exception {
         JobConf nullConf = new JobConf();
         SliveMapper newMapper = new SliveMapper();
-        
+
         try {
             newMapper.configure(nullConf);
             fail("Expected RuntimeException");
         } catch (RuntimeException e) {
             assertTrue(e.getMessage().contains("Unable to setup slive configuration"));
         }
+    }
+
+    @Test
+    public void testConfigureWithThreadPoolSize() throws Exception {
+        JobConf testConf = new JobConf();
+        testConf.set(ConfigOption.BASE_DIR.getCfgOption(), testBaseDir.toString());
+        testConf.set(ConfigOption.OPERATIONS.getCfgOption(), "mkdir");
+        testConf.setInt(ConfigOption.THREAD_POOL_SIZE.getCfgOption(), 5);
+        testConf.setInt(ConfigOption.FILE_SIZE.getCfgOption(), 1);
+        testConf.setInt(ConfigOption.OPS_PER_MAPPER.getCfgOption(), 10);
+        testConf.set("mapred.task.id", "attempt_001_0001_m_000000_0");
+
+        SliveMapper testMapper = new SliveMapper();
+        testMapper.configure(testConf);
+
+        assertNotNull(testMapper);
     }
 }

@@ -85,7 +85,8 @@ public class HDFSRpcTest implements Tool {
         job.set(ConfigOption.OPERATIONS.getCfgOption(), opts.getValue(ConfigOption.OPERATIONS.getOpt(), ConfigOption.OPERATIONS.getDefaultValue()));
         job.setInt(ConfigOption.FILE_SIZE.getCfgOption(), opts.getValueAsInt(ConfigOption.FILE_SIZE.getOpt(), ConfigOption.FILE_SIZE.getDefaultValue()));
         job.setInt(ConfigOption.OPS_PER_MAPPER.getCfgOption(), opts.getValueAsInt(ConfigOption.OPS_PER_MAPPER.getOpt(), ConfigOption.OPS_PER_MAPPER.getDefaultValue()));
-        
+        job.setInt(ConfigOption.THREAD_POOL_SIZE.getCfgOption(), opts.getValueAsInt(ConfigOption.THREAD_POOL_SIZE.getOpt(), ConfigOption.THREAD_POOL_SIZE.getDefaultValue()));
+
         return job;
     }
 

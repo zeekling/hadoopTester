@@ -24,6 +24,8 @@ public class ConfigOption<T> extends Option {
 
     static final ConfigOption<Integer> DIR_COUNT = new ConfigOption<Integer>("dirCount", true, "Number of directories per operation", PREFIX + ".dir.count", 10);
 
+    static final ConfigOption<Integer> THREAD_POOL_SIZE = new ConfigOption<Integer>("threadPoolSize", true, "Thread pool size for async operations", PREFIX + ".thread.pool.size", 10);
+
     static final Option HELP = new Option("h", "help", false, "Usage information");
 
 
