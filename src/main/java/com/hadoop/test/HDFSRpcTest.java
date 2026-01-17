@@ -3,6 +3,9 @@ package com.hadoop.test;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
@@ -58,7 +61,9 @@ public class HDFSRpcTest implements Tool {
         System.out.println("opsPerMapper=" + opsPerMapper);
         int numMaps = parsedOpts.getValueAsInt(ConfigOption.MAPS.getOpt(), ConfigOption.MAPS.getDefaultValue());
         System.out.println("numMaps=" + numMaps);
-        JobClient.runJob(getJob(parsedOpts));
+        JobConf job = getJob(parsedOpts);
+        JobClient.runJob(job);
+        displayResults(job);
         return 0;
     }
 
@@ -93,5 +98,31 @@ public class HDFSRpcTest implements Tool {
     @Override
     public Configuration getConf() {
         return null;
+    }
+
+    private void displayResults(JobConf job) {
+        try {
+            Path outputPath = FileOutputFormat.getOutputPath(job);
+            FileSystem fs = outputPath.getFileSystem(job);
+
+            Path resultPath = new Path(outputPath, "part-00000");
+            if (!fs.exists(resultPath)) {
+                LOG.warn("Output file not found: " + resultPath);
+                return;
+            }
+
+            System.out.println("\n========== Test Results ==========\n");
+            org.apache.hadoop.fs.FSDataInputStream in = fs.open(resultPath);
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(in));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+            reader.close();
+            in.close();
+            System.out.println("\n===================================\n");
+        } catch (IOException e) {
+            LOG.error("Error reading results: ", e);
+        }
     }
 }
