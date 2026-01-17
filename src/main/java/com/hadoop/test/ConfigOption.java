@@ -23,7 +23,7 @@ public class ConfigOption<T> extends Option {
 
     static final ConfigOption<Integer> FILE_COUNT = new ConfigOption<Integer>("fileCount", true, "Number of files per operation", PREFIX + ".file.count", 100);
 
-    static final ConfigOption<Integer> OPS_PER_MAPPER = new ConfigOption<Integer>("opsPerMapper", true, "Operations per mapper", PREFIX + ".ops.per.mapper", 1000);
+    static final ConfigOption<Integer> OPS_PER_MAPPER = new ConfigOption<Integer>("opsPerMapper", true, "Operations per mapper", PREFIX + ".ops.per.mapper", 10000);
 
     static final ConfigOption<Integer> DIR_COUNT = new ConfigOption<Integer>("dirCount", true, "Number of directories per operation", PREFIX + ".dir.count", 10);
 

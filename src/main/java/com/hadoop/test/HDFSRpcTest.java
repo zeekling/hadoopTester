@@ -56,7 +56,7 @@ public class HDFSRpcTest implements Tool {
         System.out.println("fileSize=" + fileSize + " MB");
         int opsPerMapper = parsedOpts.getValueAsInt(ConfigOption.OPS_PER_MAPPER.getOpt(), ConfigOption.OPS_PER_MAPPER.getDefaultValue());
         System.out.println("opsPerMapper=" + opsPerMapper);
-        int numMaps = parsedOpts.getValueAsInt(ConfigOption.MAPS.getOpt(), 2);
+        int numMaps = parsedOpts.getValueAsInt(ConfigOption.MAPS.getOpt(), ConfigOption.MAPS.getDefaultValue());
         System.out.println("numMaps=" + numMaps);
         JobClient.runJob(getJob(parsedOpts));
         return 0;
@@ -73,8 +73,8 @@ public class HDFSRpcTest implements Tool {
         job.setOutputValueClass(Text.class);
         job.setOutputFormat(TextOutputFormat.class);
         TextOutputFormat.setCompressOutput(job, false);
-        job.setNumReduceTasks(opts.getValueAsInt(ConfigOption.REDUCES.getOpt(), 1));
-        job.setNumMapTasks(opts.getValueAsInt(ConfigOption.MAPS.getOpt(), 2));
+        job.setNumReduceTasks(opts.getValueAsInt(ConfigOption.REDUCES.getOpt(), ConfigOption.REDUCES.getDefaultValue()));
+        job.setNumMapTasks(opts.getValueAsInt(ConfigOption.MAPS.getOpt(), ConfigOption.MAPS.getDefaultValue()));
         
         job.set(ConfigOption.BASE_DIR.getCfgOption(), opts.getValue(ConfigOption.BASE_DIR.getOpt(), ConfigOption.BASE_DIR.getDefaultValue()));
         job.set(ConfigOption.OPERATIONS.getCfgOption(), opts.getValue(ConfigOption.OPERATIONS.getOpt(), ConfigOption.OPERATIONS.getDefaultValue()));

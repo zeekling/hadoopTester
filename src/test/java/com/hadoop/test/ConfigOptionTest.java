@@ -38,7 +38,7 @@ public class ConfigOptionTest {
 
     @Test
     public void testOpsPerMapperDefaultValue() {
-        assertEquals(Integer.valueOf(1000), ConfigOption.OPS_PER_MAPPER.getDefaultValue());
+        assertEquals(Integer.valueOf(10000), ConfigOption.OPS_PER_MAPPER.getDefaultValue());
     }
 
     @Test
