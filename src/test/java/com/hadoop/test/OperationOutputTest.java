@@ -14,6 +14,7 @@ public class OperationOutputTest {
         assertEquals("mkdir", output.getOperationType());
         assertEquals("duration", output.getMeasurementType());
         assertEquals(100L, output.getValue());
+        assertEquals(1L, output.getCount());
     }
 
     @Test
@@ -24,15 +25,17 @@ public class OperationOutputTest {
         assertEquals("ls", output.getOperationType());
         assertEquals("count", output.getMeasurementType());
         assertEquals(5, output.getValue());
+        assertEquals(1L, output.getCount());
     }
 
     @Test
     public void testConstructorWithAllParameters() {
-        OperationOutput output = new OperationOutput(OperationOutput.OutputType.DOUBLE, "write", "throughput", 100.5);
+        OperationOutput output = new OperationOutput(OperationOutput.OutputType.DOUBLE, "write", "throughput", 100.5, 5);
         assertEquals(OperationOutput.OutputType.DOUBLE, output.getOutputType());
         assertEquals("write", output.getOperationType());
         assertEquals("throughput", output.getMeasurementType());
         assertEquals(100.5, output.getValue());
+        assertEquals(5L, output.getCount());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -192,5 +195,27 @@ public class OperationOutputTest {
 
         OperationOutput intOutput = new OperationOutput("INTEGER:op*meas", 1);
         assertEquals(OperationOutput.OutputType.INTEGER, intOutput.getOutputType());
+    }
+
+    @Test
+    public void testDefaultCount() {
+        OperationOutput output = new OperationOutput("LONG:mkdir*duration", 100L);
+        assertEquals(1L, output.getCount());
+    }
+
+    @Test
+    public void testCustomCount() {
+        OperationOutput output = new OperationOutput(OperationOutput.OutputType.LONG, "mkdir", "duration", 100L, 5);
+        assertEquals(5L, output.getCount());
+        assertEquals(100L, output.getValue());
+    }
+
+    @Test
+    public void testMergeCount() {
+        OperationOutput o1 = new OperationOutput(OperationOutput.OutputType.LONG, "mkdir", "duration", 100L, 3);
+        OperationOutput o2 = new OperationOutput(OperationOutput.OutputType.LONG, "mkdir", "duration", 50L, 2);
+        OperationOutput merged = OperationOutput.merge(o1, o2);
+        assertEquals(150L, merged.getValue());
+        assertEquals(5L, merged.getCount());
     }
 }

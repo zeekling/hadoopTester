@@ -61,34 +61,35 @@ public class SliveReducer extends MapReduceBase implements
   @Override // Reducer
   public void reduce(Text key, Iterator<Text> values,
       OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
-    OperationOutput collector = null;
-    int reduceAm = 0;
-    int errorAm = 0;
-    logAndSetStatus(reporter, "Iterating over reduction values for key " + key);
+    String opType = key.toString();
+    long totalTime = 0;
+    long minTime = Long.MAX_VALUE;
+    long maxTime = Long.MIN_VALUE;
+    int count = 0;
+
+    logAndSetStatus(reporter, "Reducing operation: " + opType);
+
     while (values.hasNext()) {
       Text value = values.next();
       try {
-        OperationOutput val = new OperationOutput(key, value);
-        if (collector == null) {
-          collector = val;
-        } else {
-          collector = OperationOutput.merge(collector, val);
-        }
-        LOG.info("Combined " + val + " into/with " + collector);
-        ++reduceAm;
+        long duration = Long.parseLong(value.toString());
+        totalTime += duration;
+        minTime = Math.min(minTime, duration);
+        maxTime = Math.max(maxTime, duration);
+        count++;
       } catch (Exception e) {
-        ++errorAm;
-        logAndSetStatus(reporter, "Error iterating over reduction input "
-            + value + " due to : " + StringUtils.stringifyException(e));
-          break;
+        logAndSetStatus(reporter, "Error parsing duration for " + opType
+            + " value: " + value + " due to: " + StringUtils.stringifyException(e));
       }
     }
-    logAndSetStatus(reporter, "Reduced " + reduceAm + " values with " + errorAm
-        + " errors");
-    if (collector != null) {
-      logAndSetStatus(reporter, "Writing output " + collector.getKey() + " : "
-          + collector.getOutputValue());
-      output.collect(collector.getKey(), collector.getOutputValue());
+
+    if (count > 0) {
+      long avgTime = totalTime / count;
+      String result = String.format("count=%d, total=%dms, avg=%dms, min=%dms, max=%dms",
+          count, totalTime, avgTime, minTime, maxTime);
+
+      logAndSetStatus(reporter, "Writing stats for " + opType + ": " + result);
+      output.collect(key, new Text(result));
     }
   }
 

@@ -105,7 +105,6 @@ public class ArgumentParserTest {
     public void testParseMultipleOptions() throws Exception {
         ArgumentParser argHolder = new ArgumentParser(new String[]{
             "-maps", "5",
-            "-reduces", "2",
             "-baseDir", "/test/dir",
             "-operations", "mkdir,write",
             "-fileSize", "20",
@@ -115,7 +114,6 @@ public class ArgumentParserTest {
         });
         ArgumentParser.ParsedOutput parsedOpts = argHolder.parse();
         assertEquals("5", parsedOpts.getValue(ConfigOption.MAPS.getOpt()));
-        assertEquals("2", parsedOpts.getValue(ConfigOption.REDUCES.getOpt()));
         assertEquals("/test/dir", parsedOpts.getValue(ConfigOption.BASE_DIR.getOpt()));
         assertEquals("mkdir,write", parsedOpts.getValue(ConfigOption.OPERATIONS.getOpt()));
         assertEquals("20", parsedOpts.getValue(ConfigOption.FILE_SIZE.getOpt()));
@@ -128,12 +126,10 @@ public class ArgumentParserTest {
     public void testGetValueAsIntForMultipleOptions() throws Exception {
         ArgumentParser argHolder = new ArgumentParser(new String[]{
             "-maps", "5",
-            "-reduces", "2",
             "-fileSize", "20"
         });
         ArgumentParser.ParsedOutput parsedOpts = argHolder.parse();
         assertEquals(5, parsedOpts.getValueAsInt(ConfigOption.MAPS.getOpt(), 10));
-        assertEquals(2, parsedOpts.getValueAsInt(ConfigOption.REDUCES.getOpt(), 1));
         assertEquals(20, parsedOpts.getValueAsInt(ConfigOption.FILE_SIZE.getOpt(), 10));
         assertEquals(10, parsedOpts.getValueAsInt(ConfigOption.FILE_COUNT.getOpt(), 10));
     }

@@ -12,11 +12,6 @@ public class ConfigOptionTest {
     }
 
     @Test
-    public void testReducesDefaultValue() {
-        assertEquals(Integer.valueOf(1), ConfigOption.REDUCES.getDefaultValue());
-    }
-
-    @Test
     public void testBaseDirDefaultValue() {
         assertEquals("/test/hdfsrpc", ConfigOption.BASE_DIR.getDefaultValue());
     }
@@ -49,11 +44,6 @@ public class ConfigOptionTest {
     @Test
     public void testMapsCfgOption() {
         assertEquals("test.maps", ConfigOption.MAPS.getCfgOption());
-    }
-
-    @Test
-    public void testReducesCfgOption() {
-        assertEquals("test.reduces", ConfigOption.REDUCES.getCfgOption());
     }
 
     @Test
@@ -92,11 +82,6 @@ public class ConfigOptionTest {
     }
 
     @Test
-    public void testReducesHasArg() {
-        assertTrue(ConfigOption.REDUCES.hasArg());
-    }
-
-    @Test
     public void testBaseDirHasArg() {
         assertTrue(ConfigOption.BASE_DIR.hasArg());
     }
@@ -129,11 +114,6 @@ public class ConfigOptionTest {
     @Test
     public void testMapsOpt() {
         assertEquals("maps", ConfigOption.MAPS.getOpt());
-    }
-
-    @Test
-    public void testReducesOpt() {
-        assertEquals("reduces", ConfigOption.REDUCES.getOpt());
     }
 
     @Test

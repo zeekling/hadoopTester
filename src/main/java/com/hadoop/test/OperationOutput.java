@@ -41,6 +41,7 @@ class OperationOutput {
   private OutputType dataType;
   private String opType, measurementType;
   private Object value;
+  private long count = 1;
 
   private static final String TYPE_SEP = ":";
   private static final String MEASUREMENT_SEP = "*";
@@ -95,10 +96,16 @@ class OperationOutput {
 
   OperationOutput(OutputType dataType, String opType, String measurementType,
                   Object value) {
+    this(dataType, opType, measurementType, value, 1);
+  }
+
+  OperationOutput(OutputType dataType, String opType, String measurementType,
+                  Object value, long count) {
     this.dataType = dataType;
     this.opType = opType;
     this.measurementType = measurementType;
     this.value = value;
+    this.count = count;
   }
 
   /**
@@ -171,7 +178,8 @@ class OperationOutput {
               "Unable to combine a type with an int " + o1 + " & " + o2, e);
         }
       }
-      return new OperationOutput(newtype, opType, mType, newvalue);
+      long mergedCount = o1.count + o2.count;
+      return new OperationOutput(newtype, opType, mType, newvalue, mergedCount);
     } else {
       throw new IllegalArgumentException("Unable to combine dissimilar types "
           + o1 + " & " + o2);
@@ -246,6 +254,15 @@ class OperationOutput {
    */
   String getMeasurementType() {
     return measurementType;
+  }
+
+  /**
+   * Gets the count of operations.
+   * 
+   * @return long
+   */
+  long getCount() {
+    return count;
   }
 
 }

@@ -23,7 +23,6 @@ public class ArgumentParser {
     private Options getOptions() {
         Options cliopt = new Options();
         cliopt.addOption(ConfigOption.MAPS);
-        cliopt.addOption(ConfigOption.REDUCES);
         cliopt.addOption(ConfigOption.BASE_DIR);
         cliopt.addOption(ConfigOption.OPERATIONS);
         cliopt.addOption(ConfigOption.FILE_SIZE);

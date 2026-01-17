@@ -11,9 +11,6 @@ public class ConfigOption<T> extends Option {
     static final ConfigOption<Integer> MAPS = new ConfigOption<Integer>(
             "maps", true, "Number of maps", PREFIX + ".maps", 10);
 
-    static final ConfigOption<Integer> REDUCES = new ConfigOption<Integer>(
-            "reduces", true, "Number of reduces", PREFIX + ".reduces", 1);
-
     static final ConfigOption<String> BASE_DIR = new ConfigOption<String>("baseDir", true, "Base directory path", PREFIX + ".base.dir",
             "/test/hdfsrpc");
 

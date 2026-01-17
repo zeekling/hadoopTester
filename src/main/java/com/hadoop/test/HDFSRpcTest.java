@@ -73,7 +73,7 @@ public class HDFSRpcTest implements Tool {
         job.setOutputValueClass(Text.class);
         job.setOutputFormat(TextOutputFormat.class);
         TextOutputFormat.setCompressOutput(job, false);
-        job.setNumReduceTasks(opts.getValueAsInt(ConfigOption.REDUCES.getOpt(), ConfigOption.REDUCES.getDefaultValue()));
+        job.setNumReduceTasks(1);
         job.setNumMapTasks(opts.getValueAsInt(ConfigOption.MAPS.getOpt(), ConfigOption.MAPS.getDefaultValue()));
         
         job.set(ConfigOption.BASE_DIR.getCfgOption(), opts.getValue(ConfigOption.BASE_DIR.getOpt(), ConfigOption.BASE_DIR.getDefaultValue()));
