@@ -115,15 +115,15 @@ public class SliveMapperTest {
     public void testMapStatusUpdates() throws IOException {
         Object key = "test_key";
         Object value = "test_value";
-        
+
         conf.setInt(ConfigOption.OPS_PER_MAPPER.getCfgOption(), 200);
         mapper.configure(conf);
-        
+
         mapper.map(key, value, output, reporter);
-        
+
+        verify(reporter).setStatus(contains("Running slive mapper"));
         verify(reporter).setStatus("Completed 100 operations");
-        verify(reporter).setStatus("Completed 200 operations");
-        verify(reporter).setStatus("Completed all 200 operations");
+        verify(reporter).setStatus(contains("Completed 200 operations successfully, 0 failed"));
     }
 
     @Test

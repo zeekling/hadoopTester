@@ -96,6 +96,7 @@ public class SliveMapper extends MapReduceBase implements
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         int[] completedOps = {0};
+        int[] failedOps = {0};
 
         int opIndex = 0;
         for (int i = 0; i < opsPerMapper; i++) {
@@ -128,6 +129,6 @@ public class SliveMapper extends MapReduceBase implements
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         operation.shutdown();
 
-        logAndSetStatus(reporter, "Completed all " + opsPerMapper + " operations");
+        logAndSetStatus(reporter, "Completed " + completedOps[0] + " operations successfully, " + failedOps[0] + " failed");
     }
 }

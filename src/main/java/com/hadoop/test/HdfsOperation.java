@@ -73,60 +73,142 @@ public class HdfsOperation {
         }
     }
 
-    private OperationOutput executeMkdir(int index, long startTime) throws IOException {
-        Path dirPath = new Path(baseDir + "/mkdir/" + taskId + "/dir_" + index);
-        boolean success = fs.mkdirs(dirPath);
-        long duration = System.currentTimeMillis() - startTime;
-        return new OperationOutput(OperationOutput.OutputType.LONG, "mkdir", "duration", duration, 1);
-    }
-
-    private OperationOutput executeWrite(int index, long startTime) throws IOException {
-        Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
-        byte[] data = generateData(fileSize * 1024 * 1024);
-
-        FSDataOutputStream out = fs.create(filePath, true);
-        out.write(data);
-        out.close();
-
-        long duration = System.currentTimeMillis() - startTime;
-        return new OperationOutput(OperationOutput.OutputType.LONG, "write", "duration", duration, 1);
-    }
-
-    private OperationOutput executeRead(int index, long startTime) throws IOException {
-        Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
-        if (!fs.exists(filePath)) {
-            return new OperationOutput(OperationOutput.OutputType.LONG, "read", "skipped", 0L, 1);
+    private OperationOutput executeMkdir(int index, long startTime) {
+        try {
+            Path dirPath = new Path(baseDir + "/mkdir/" + taskId + "/dir_" + index);
+            boolean success = fs.mkdirs(dirPath);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "mkdir", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute mkdir at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "mkdir", "error", duration, 1);
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            LOG.error("Unexpected error in mkdir at index {}: {}", index, e.getMessage(), e);
+            return new OperationOutput(OperationOutput.OutputType.LONG, "mkdir", "error", duration, 1);
         }
+    }
 
-        FSDataInputStream in = fs.open(filePath);
-        byte[] buffer = new byte[8192];
-        while (in.read(buffer) > 0) {
+    private OperationOutput executeWrite(int index, long startTime) {
+        FSDataOutputStream out = null;
+        try {
+            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
+            byte[] data = generateData(fileSize * 1024 * 1024);
+
+            out = fs.create(filePath, true);
+
+            out.write(data);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "write", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute write at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "write", "error", duration, 1);
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            LOG.error("Unexpected error in write at index {}: {}", index, e.getMessage(), e);
+            return new OperationOutput(OperationOutput.OutputType.LONG, "write", "error", duration, 1);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    LOG.warn("Failed to close output stream: {}", e.getMessage());
+                }
+            }
         }
-        in.close();
-
-        long duration = System.currentTimeMillis() - startTime;
-        return new OperationOutput(OperationOutput.OutputType.LONG, "read", "duration", duration, 1);
     }
 
-    private OperationOutput executeDeleteDir(int index, long startTime) throws IOException {
-        Path dirPath = new Path(baseDir + "/mkdir/" + taskId + "/dir_" + index);
-        boolean success = fs.delete(dirPath, true);
-        long duration = System.currentTimeMillis() - startTime;
-        return new OperationOutput(OperationOutput.OutputType.LONG, "delete_dir", "duration", duration, 1);
+    private OperationOutput executeRead(int index, long startTime) {
+        FSDataInputStream in = null;
+        try {
+            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
+            in = fs.open(filePath);
+
+
+            byte[] buffer = new byte[8192];
+            int totalRead = 0;
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) > 0) {
+                totalRead += bytesRead;
+            }
+            LOG.debug("Read {} bytes from file {}", totalRead, filePath);
+
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "read", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute read at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "read", "error", duration, 1);
+        } catch (Exception e) {
+            LOG.error("Unexpected error in read at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "read", "error", duration, 1);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    LOG.warn("Failed to close input stream: {}", e.getMessage());
+                }
+            }
+        }
     }
 
-    private OperationOutput executeDeleteFile(int index, long startTime) throws IOException {
-        Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
-        boolean success = fs.delete(filePath, false);
-        long duration = System.currentTimeMillis() - startTime;
-        return new OperationOutput(OperationOutput.OutputType.LONG, "delete_file", "duration", duration, 1);
+    private OperationOutput executeDeleteDir(int index, long startTime) {
+        try {
+            Path dirPath = new Path(baseDir + "/mkdir/" + taskId + "/dir_" + index);
+
+            boolean success = fs.delete(dirPath, true);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "delete_dir", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute delete_dir at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "delete_dir", "error", duration, 1);
+        } catch (Exception e) {
+            LOG.error("Unexpected error in delete_dir at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "delete_dir", "error", duration, 1);
+        }
     }
 
-    private OperationOutput executeList(int index, long startTime) throws IOException {
-        Path dirPath = new Path(baseDir + "/write/" + taskId);
-        FileStatus[] statuses = fs.listStatus(dirPath);
-        long duration = System.currentTimeMillis() - startTime;
-        return new OperationOutput(OperationOutput.OutputType.LONG, "ls", "duration", duration, 1);
+    private OperationOutput executeDeleteFile(int index, long startTime) {
+        try {
+            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
+
+            boolean success = fs.delete(filePath, false);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "delete_file", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute delete_file at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "delete_file", "error", duration, 1);
+        } catch (Exception e) {
+            LOG.error("Unexpected error in delete_file at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "delete_file", "error", duration, 1);
+        }
+    }
+
+    private OperationOutput executeList(int index, long startTime) {
+        try {
+            Path dirPath = new Path(baseDir + "/write/" + taskId);
+
+            FileStatus[] statuses = fs.listStatus(dirPath);
+
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "ls", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute ls at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "ls", "error", duration, 1);
+        } catch (Exception e) {
+            LOG.error("Unexpected error in ls at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "ls", "error", duration, 1);
+        }
     }
 
     private byte[] generateData(int size) {
