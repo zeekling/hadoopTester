@@ -16,8 +16,12 @@ This is a Maven-based Java project. Use these commands for development:
 
 ### Test Commands
 - **Run all tests**: `mvn test`
-- **Run specific test**: `mvn test -Dtest=ClassName`
+- **Run specific test class**: `mvn test -Dtest=ClassName`
+- **Run specific test method**: `mvn test -Dtest=ClassName#methodName`
 - **Skip tests during build**: `mvn clean package -DskipTests`
+
+### Lint/Typecheck
+No explicit lint or typecheck plugins are configured. Before committing changes, ensure all tests pass with `mvn test`.
 
 ## Project Structure
 
@@ -110,18 +114,10 @@ src/main/java/com/hadoop/test/
 
 ## Common Patterns
 
-### Argument Parsing
+### Argument Parsing & Configuration
 ```java
 ArgumentParser argHolder = new ArgumentParser(args);
 ArgumentParser.ParsedOutput parsedOpts = argHolder.parse();
-if (parsedOpts.shouldOutputHelp()) {
-    parsedOpts.outputHelp();
-    return 1;
-}
-```
-
-### Configuration Access
-```java
 String value = parsedOpts.getValue(ConfigOption.OPTION_NAME.getOpt());
 int intValue = parsedOpts.getValueAsInt(ConfigOption.INT_OPTION.getOpt(), defaultValue);
 ```
@@ -145,11 +141,25 @@ job.setOutputKeyClass(Text.class);
 job.setOutputValueClass(Text.class);
 ```
 
+### Table Formatting
+```java
+String row = String.format("| %-10s | %4d | %10d |", "op", count, total);
+```
+
+### Mocking in Tests
+```java
+output = mock(OutputCollector.class);
+verify(reporter).setStatus(contains("message"));
+```
+
 ## Development Notes
 
 - The project uses Hadoop MapReduce (old API) with `mapred` package
-- Lombok is used for reducing boilerplate code
+- Lombok is used for reducing boilerplate code with `@Getter` annotations
 - All main classes should implement `Tool` interface
 - Use `DummyInputFormat` for testing without real input data
 - Configuration options should have sensible defaults
 - Log at appropriate levels, avoid excessive DEBUG logging in production
+- Memory configurations (mapMemoryMb, reduceMemoryMb) use String type and are set directly to Hadoop config
+- Test results use table format with `String.format` for aligned columns
+- Mockito is used for testing with `verify()` and `any()` matchers
