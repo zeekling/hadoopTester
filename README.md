@@ -56,22 +56,22 @@ mvn clean package
                 --operations mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink"
  ```
 
-### 参数说明
+ ### 参数说明
 
- | 参数 | 说明 | 默认值 |
- |------|------|--------|
- | `--maps` | Map 任务数量 | 10 |
- | `--reduces` | Reduce 任务数量 | 1 |
- | `--mapMemoryMb` | Map 任务内存（MB） | 1024 |
- | `--reduceMemoryMb` | Reduce 任务内存（MB） | 512 |
- | `--baseDir` | 基础测试目录 | /test/hdfsrpc |
-  | `--operations` | 操作类型（逗号分隔） | mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink |
- | `--fileSize` | 文件大小（MB） | 10 |
- | `--opsPerMapper` | 每个 Mapper 的操作次数 | 1000 |
- | `--fileCount` | 每个操作的文件数量 | 100 |
- | `--dirCount` | 每个操作的目录数量 | 10 |
- | `--threadPoolSize` | 异步操作线程池大小 | 10 |
- | `--help` | 显示帮助信息 | - |
+ | 参数              | 说明                        | 默认值 |
+ |--------------------|------------------------------|----------|
+ | `--maps`           | Map 任务数量               | 10       |
+ | `--reduces`        | Reduce 任务数量             | 1        |
+ | `--mapMemoryMb`    | Map 任务内存（MB）        | 1024     |
+ | `--reduceMemoryMb`  | Reduce 任务内存（MB）       | 512      |
+ | `--baseDir`         | 基础测试目录              | /test/hdfsrpc |
+ | `--operations`       | 操作类型（逗号分隔）        | mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink |
+ | `--fileSize`        | 文件大小（MB）             | 10        |
+ | `--opsPerMapper`    | 每个 Mapper 的操作次数       | 1000      |
+ | `--fileCount`        | 每个操作的文件数量         | 100       |
+ | `--dirCount`         | 每个操作的目录数量         | 10       |
+ | `--threadPoolSize`    | 异步操作线程池大小          | 10       |
+ | `--help`            | 显示帮助信息              | -         |
 
 ### 操作类型
 
