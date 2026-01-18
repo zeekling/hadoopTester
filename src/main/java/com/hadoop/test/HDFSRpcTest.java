@@ -61,6 +61,10 @@ public class HDFSRpcTest implements Tool {
         System.out.println("opsPerMapper=" + opsPerMapper);
         int numMaps = parsedOpts.getValueAsInt(ConfigOption.MAPS.getOpt(), ConfigOption.MAPS.getDefaultValue());
         System.out.println("numMaps=" + numMaps);
+        String mapMemoryMb = parsedOpts.getValue(ConfigOption.MAP_MEMORY_MB.getOpt(), ConfigOption.MAP_MEMORY_MB.getDefaultValue());
+        System.out.println("mapMemoryMb=" + mapMemoryMb + " MB");
+        String reduceMemoryMb = parsedOpts.getValue(ConfigOption.REDUCE_MEMORY_MB.getOpt(), ConfigOption.REDUCE_MEMORY_MB.getDefaultValue());
+        System.out.println("reduceMemoryMb=" + reduceMemoryMb + " MB");
         JobConf job = getJob(parsedOpts);
         JobClient.runJob(job);
         displayResults(job);
@@ -86,6 +90,8 @@ public class HDFSRpcTest implements Tool {
         job.setInt(ConfigOption.FILE_SIZE.getCfgOption(), opts.getValueAsInt(ConfigOption.FILE_SIZE.getOpt(), ConfigOption.FILE_SIZE.getDefaultValue()));
         job.setInt(ConfigOption.OPS_PER_MAPPER.getCfgOption(), opts.getValueAsInt(ConfigOption.OPS_PER_MAPPER.getOpt(), ConfigOption.OPS_PER_MAPPER.getDefaultValue()));
         job.setInt(ConfigOption.THREAD_POOL_SIZE.getCfgOption(), opts.getValueAsInt(ConfigOption.THREAD_POOL_SIZE.getOpt(), ConfigOption.THREAD_POOL_SIZE.getDefaultValue()));
+        job.set("mapred.job.map.memory.mb", opts.getValue(ConfigOption.MAP_MEMORY_MB.getOpt(), ConfigOption.MAP_MEMORY_MB.getDefaultValue()));
+        job.set("mapred.job.reduce.memory.mb", opts.getValue(ConfigOption.REDUCE_MEMORY_MB.getOpt(), ConfigOption.REDUCE_MEMORY_MB.getDefaultValue()));
 
         return job;
     }

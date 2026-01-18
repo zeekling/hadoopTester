@@ -26,6 +26,10 @@ public class ConfigOption<T> extends Option {
 
     static final ConfigOption<Integer> THREAD_POOL_SIZE = new ConfigOption<Integer>("threadPoolSize", true, "Thread pool size for async operations", PREFIX + ".thread.pool.size", 10);
 
+    static final ConfigOption<String> MAP_MEMORY_MB = new ConfigOption<String>("mapMemoryMb", true, "Map task memory in MB", PREFIX + ".map.memory.mb", "1024");
+
+    static final ConfigOption<String> REDUCE_MEMORY_MB = new ConfigOption<String>("reduceMemoryMb", true, "Reduce task memory in MB", PREFIX + ".reduce.memory.mb", "512");
+
     static final Option HELP = new Option("h", "help", false, "Usage information");
 
 

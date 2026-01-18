@@ -42,6 +42,16 @@ public class ConfigOptionTest {
     }
 
     @Test
+    public void testMapMemoryMbDefaultValue() {
+        assertEquals("1024", ConfigOption.MAP_MEMORY_MB.getDefaultValue());
+    }
+
+    @Test
+    public void testReduceMemoryMbDefaultValue() {
+        assertEquals("512", ConfigOption.REDUCE_MEMORY_MB.getDefaultValue());
+    }
+
+    @Test
     public void testMapsCfgOption() {
         assertEquals("test.maps", ConfigOption.MAPS.getCfgOption());
     }
@@ -74,6 +84,16 @@ public class ConfigOptionTest {
     @Test
     public void testDirCountCfgOption() {
         assertEquals("test.dir.count", ConfigOption.DIR_COUNT.getCfgOption());
+    }
+
+    @Test
+    public void testMapMemoryMbCfgOption() {
+        assertEquals("test.map.memory.mb", ConfigOption.MAP_MEMORY_MB.getCfgOption());
+    }
+
+    @Test
+    public void testReduceMemoryMbCfgOption() {
+        assertEquals("test.reduce.memory.mb", ConfigOption.REDUCE_MEMORY_MB.getCfgOption());
     }
 
     @Test
@@ -112,6 +132,16 @@ public class ConfigOptionTest {
     }
 
     @Test
+    public void testMapMemoryMbHasArg() {
+        assertTrue(ConfigOption.MAP_MEMORY_MB.hasArg());
+    }
+
+    @Test
+    public void testReduceMemoryMbHasArg() {
+        assertTrue(ConfigOption.REDUCE_MEMORY_MB.hasArg());
+    }
+
+    @Test
     public void testMapsOpt() {
         assertEquals("maps", ConfigOption.MAPS.getOpt());
     }
@@ -144,5 +174,15 @@ public class ConfigOptionTest {
     @Test
     public void testDirCountOpt() {
         assertEquals("dirCount", ConfigOption.DIR_COUNT.getOpt());
+    }
+
+    @Test
+    public void testMapMemoryMbOpt() {
+        assertEquals("mapMemoryMb", ConfigOption.MAP_MEMORY_MB.getOpt());
+    }
+
+    @Test
+    public void testReduceMemoryMbOpt() {
+        assertEquals("reduceMemoryMb", ConfigOption.REDUCE_MEMORY_MB.getOpt());
     }
 }

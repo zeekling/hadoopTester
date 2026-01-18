@@ -29,6 +29,9 @@ public class ArgumentParser {
         cliopt.addOption(ConfigOption.FILE_COUNT);
         cliopt.addOption(ConfigOption.OPS_PER_MAPPER);
         cliopt.addOption(ConfigOption.DIR_COUNT);
+        cliopt.addOption(ConfigOption.THREAD_POOL_SIZE);
+        cliopt.addOption(ConfigOption.MAP_MEMORY_MB);
+        cliopt.addOption(ConfigOption.REDUCE_MEMORY_MB);
         cliopt.addOption(ConfigOption.HELP);
         return cliopt;
     }
