@@ -119,9 +119,9 @@ public class HDFSRpcTest implements Tool {
             }
 
             System.out.println("\n========== Test Results ==========");
-            String header = "+------------+------+------------+-----------+-----------+-----------+";
-            String title = "| Operation  | Count| Total(ms)  | Avg(ms)   | Min(ms)   | Max(ms)   |";
-            String divider = "+------------+------+------------+-----------+-----------+-----------+";
+            String header = "+------------+------------+------+------------+-----------+-----------+-----------+";
+            String title = "| key    | Operation  | Count| Total(ms)  | Avg(ms)   | Min(ms)   | Max(ms)   |";
+            String divider = "+------------+------------+------+------------+-----------+-----------+-----------+";
             
             System.out.println(header);
             System.out.println(title);
