@@ -110,27 +110,32 @@ mvn exec:java -Dexec.mainClass="com.hadoop.test.HDFSRpcTest" \
 
 ## 输出结果
 
-测试结果由 Reducer 汇总统计，输出格式为：
-```
-<操作类型>    count=<操作次数>, total=<总耗时>ms, avg=<平均耗时>ms, min=<最小耗时>ms, max=<最大耗时>ms
-```
+测试结果由 Reducer 汇总统计，以表格格式输出。
 
 ### 输出示例
+
 ```
-mkdir    count=10000, total=5000ms, avg=0ms, min=0ms, max=50ms
-write    count=10000, total=120000ms, avg=12ms, min=5ms, max=100ms
-read     count=10000, total=80000ms, avg=8ms, min=3ms, max=80ms
-delete_dir    count=10000, total=6000ms, avg=0ms, min=0ms, max=60ms
-delete_file    count=10000, total=4000ms, avg=0ms, min=0ms, max=40ms
-ls    count=10000, total=30000ms, avg=3ms, min=1ms, max=30ms
+========== Test Results ==========
++------------+------+------------+-----------+-----------+-----------+
+| Operation  | Count| Total(ms)  | Avg(ms)   | Min(ms)   | Max(ms)   |
++------------+------+------------+-----------+-----------+-----------+
+| mkdir      |10000 |       5000 |         0 |         0 |        50 |
+| write      |10000 |     120000 |        12 |         5 |       100 |
+| read       |10000 |      80000 |         8 |         3 |        80 |
+| delete_dir |10000 |       6000 |         0 |         0 |        60 |
+| delete_file|10000 |       4000 |         0 |         0 |        40 |
+| ls         |10000 |      30000 |         3 |         1 |        30 |
++------------+------+------------+-----------+-----------+-----------+
+===================================
 ```
 
 ### 统计指标说明
-- **count**: 该操作执行的总次数
-- **total**: 所有操作的总耗时（毫秒）
-- **avg**: 平均每次操作的耗时（毫秒）
-- **min**: 最快的一次操作耗时（毫秒）
-- **max**: 最慢的一次操作耗时（毫秒）
+- **Operation**: 操作类型（mkdir, write, read, delete_dir, delete_file, ls）
+- **Count**: 该操作执行的总次数
+- **Total(ms)**: 所有操作的总耗时（毫秒）
+- **Avg(ms)**: 平均每次操作的耗时（毫秒）
+- **Min(ms)**: 最快的一次操作耗时（毫秒）
+- **Max(ms)**: 最慢的一次操作耗时（毫秒）
 
 ## 系统要求
 
