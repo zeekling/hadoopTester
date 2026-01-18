@@ -65,15 +65,18 @@ mvn clean package
  | `--mapMemoryMb`    | Map 任务内存（MB）        | 1024     |
  | `--reduceMemoryMb`  | Reduce 任务内存（MB）       | 512      |
  | `--baseDir`         | 基础测试目录              | /test/hdfsrpc |
- | `--operations`       | 操作类型（逗号分隔）        | mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink |
+ | `--operations`       | 操作类型（逗号分隔）        | mkdir,write,read,delete_dir... |
  | `--fileSize`        | 文件大小（MB）             | 10        |
  | `--opsPerMapper`    | 每个 Mapper 的操作次数       | 1000      |
  | `--fileCount`        | 每个操作的文件数量         | 100       |
  | `--dirCount`         | 每个操作的目录数量         | 10       |
- | `--threadPoolSize`    | 异步操作线程池大小          | 10       |
- | `--help`            | 显示帮助信息              | -         |
+  | `--threadPoolSize`    | 异步操作线程池大小          | 10       |
+  | `--help`            | 显示帮助信息              | -         |
 
-### 操作类型
+**注**：`--operations` 参数的完整默认值为：
+`mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink`
+
+ ### 操作类型
 
 - `mkdir` - 创建目录测试
 - `write` - 写入文件测试
