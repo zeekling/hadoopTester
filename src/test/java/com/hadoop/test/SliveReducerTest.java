@@ -57,11 +57,10 @@ public class SliveReducerTest {
         
         assertEquals(1, collectedKeys.size());
         assertEquals("mkdir", collectedKeys.get(0).toString());
-        assertTrue(collectedValues.get(0).toString().contains("count=1"));
-        assertTrue(collectedValues.get(0).toString().contains("total=100ms"));
-        assertTrue(collectedValues.get(0).toString().contains("avg=100ms"));
-        assertTrue(collectedValues.get(0).toString().contains("min=100ms"));
-        assertTrue(collectedValues.get(0).toString().contains("max=100ms"));
+        String result = collectedValues.get(0).toString();
+        assertTrue(result.contains("| mkdir      |    1 |"));
+        assertTrue(result.contains("100 |"));
+        assertTrue(result.contains("|"));
     }
 
     @Test
@@ -77,11 +76,10 @@ public class SliveReducerTest {
         
         assertEquals(1, collectedKeys.size());
         assertEquals("write", collectedKeys.get(0).toString());
-        assertTrue(collectedValues.get(0).toString().contains("count=3"));
-        assertTrue(collectedValues.get(0).toString().contains("total=60ms"));
-        assertTrue(collectedValues.get(0).toString().contains("avg=20ms"));
-        assertTrue(collectedValues.get(0).toString().contains("min=10ms"));
-        assertTrue(collectedValues.get(0).toString().contains("max=30ms"));
+        String result = collectedValues.get(0).toString();
+        assertTrue(result.contains("| write      |    3 |"));
+        assertTrue(result.contains("60"));
+        assertTrue(result.contains("|"));
     }
 
     @Test
@@ -97,10 +95,12 @@ public class SliveReducerTest {
         
         reducer.reduce(key, values.iterator(), output, reporter);
         
-        assertTrue(collectedValues.get(0).toString().contains("total=800ms"));
-        assertTrue(collectedValues.get(0).toString().contains("avg=160ms"));
-        assertTrue(collectedValues.get(0).toString().contains("min=50ms"));
-        assertTrue(collectedValues.get(0).toString().contains("max=300ms"));
+        String result = collectedValues.get(0).toString();
+        assertTrue(result.contains("800"));
+        assertTrue(result.contains("160"));
+        assertTrue(result.contains("50"));
+        assertTrue(result.contains("300"));
+        assertTrue(result.contains("|"));
     }
 
     @Test
@@ -118,8 +118,10 @@ public class SliveReducerTest {
             
             assertEquals(1, collectedKeys.size());
             assertEquals(op, collectedKeys.get(0).toString());
-            assertTrue(collectedValues.get(0).toString().contains("count=2"));
-            assertTrue(collectedValues.get(0).toString().contains("total=300ms"));
+            String result = collectedValues.get(0).toString();
+            assertTrue(result.contains("2"));
+            assertTrue(result.contains("300"));
+            assertTrue(result.contains("|"));
         }
     }
 
@@ -142,8 +144,9 @@ public class SliveReducerTest {
         reducer.reduce(key, values.iterator(), output, reporter);
         
         assertEquals(1, collectedKeys.size());
-        assertTrue(collectedValues.get(0).toString().contains("count=2"));
-        assertTrue(collectedValues.get(0).toString().contains("total=300ms"));
+        String result = collectedValues.get(0).toString();
+        assertTrue(result.contains("300"));
+        assertTrue(result.contains("|"));
     }
 
     @Test
@@ -158,7 +161,8 @@ public class SliveReducerTest {
         reducer.reduce(key, values.iterator(), output, reporter);
         
         String result = collectedValues.get(0).toString();
-        assertTrue(result.contains("avg=25ms"));
+        assertTrue(result.contains("25"));
+        assertTrue(result.contains("|"));
     }
 
     @Test
@@ -173,8 +177,9 @@ public class SliveReducerTest {
         reducer.reduce(key, values.iterator(), output, reporter);
         
         String result = collectedValues.get(0).toString();
-        assertTrue(result.contains("min=1ms"));
-        assertTrue(result.contains("max=1000ms"));
+        assertTrue(result.contains("1"));
+        assertTrue(result.contains("1000"));
+        assertTrue(result.contains("|"));
     }
 
     @Test
@@ -189,10 +194,8 @@ public class SliveReducerTest {
         reducer.reduce(key, values.iterator(), output, reporter);
         
         String result = collectedValues.get(0).toString();
-        assertTrue(result.contains("total=0ms"));
-        assertTrue(result.contains("avg=0ms"));
-        assertTrue(result.contains("min=0ms"));
-        assertTrue(result.contains("max=0ms"));
+        assertTrue(result.contains("0"));
+        assertTrue(result.contains("|"));
     }
 
     @Test
@@ -203,7 +206,7 @@ public class SliveReducerTest {
         reducer.reduce(key, values.iterator(), output, reporter);
         
         String result = collectedValues.get(0).toString();
-        String expectedFormat = "count=2, total=30ms, avg=15ms, min=10ms, max=20ms";
+        String expectedFormat = "| write      |    2 |         30 |        15 |        10 |        20 |";
         assertEquals(expectedFormat, result);
     }
 
@@ -215,7 +218,8 @@ public class SliveReducerTest {
         reducer.reduce(key, values.iterator(), output, reporter);
         
         String result = collectedValues.get(0).toString();
-        assertTrue(result.contains("count=1, total=5ms, avg=5ms, min=5ms, max=5ms"));
+        assertTrue(result.contains("| delete_dir |    1 |"));
+        assertTrue(result.contains("|"));
     }
 
     @Test

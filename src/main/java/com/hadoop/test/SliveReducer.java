@@ -1,21 +1,3 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.hadoop.test;
 
 import org.apache.hadoop.io.Text;
@@ -41,9 +23,9 @@ public class SliveReducer extends MapReduceBase implements
    * Logs to the given reporter and logs to the internal logger at info level
    * 
    * @param r
-   *          the reporter to set status on
+   *          reporter to set status on
    * @param msg
-   *          the message to log
+   *          s message to log
    */
   private void logAndSetStatus(Reporter r, String msg) {
     r.setStatus(msg);
@@ -85,20 +67,20 @@ public class SliveReducer extends MapReduceBase implements
 
     if (count > 0) {
       long avgTime = totalTime / count;
-      String result = String.format("count=%d, total=%dms, avg=%dms, min=%dms, max=%dms",
-          count, totalTime, avgTime, minTime, maxTime);
+      String result = String.format("| %-10s | %4d | %10d | %9d | %9d | %9d |",
+          opType, count, totalTime, avgTime, minTime, maxTime);
 
       logAndSetStatus(reporter, "Writing stats for " + opType + ": " + result);
       output.collect(key, new Text(result));
     }
   }
 
+
   /*
    * (non-Javadoc)
    * 
    * @see
-   * org.apache.hadoop.mapred.MapReduceBase#configure(org.apache.hadoop.mapred
-   * .JobConf)
+   * org.apache.hadoop.mapred.MapReduceBase#configure(org.apache.hadoop.mapred.JobConf)
    */
   @Override // MapReduceBase
   public void configure(JobConf conf) {
