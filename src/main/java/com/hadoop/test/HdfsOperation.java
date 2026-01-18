@@ -64,6 +64,18 @@ public class HdfsOperation {
                     return executeDeleteFile(index, startTime);
                 case "ls":
                     return executeList(index, startTime);
+                case "rename":
+                    return executeRename(index, startTime);
+                case "get_file_status":
+                    return executeGetFileStatus(index, startTime);
+                case "exists":
+                    return executeExists(index, startTime);
+                case "set_permission":
+                    return executeSetPermission(index, startTime);
+                case "append":
+                    return executeAppend(index, startTime);
+                case "create_symlink":
+                    return executeCreateSymlink(index, startTime);
                 default:
                     throw new IllegalArgumentException("Unknown operation type: " + operationType);
             }
@@ -215,5 +227,121 @@ public class HdfsOperation {
         byte[] data = new byte[size];
         RANDOM.nextBytes(data);
         return data;
+    }
+
+    private OperationOutput executeRename(int index, long startTime) {
+        try {
+            Path oldPath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
+            Path newPath = new Path(baseDir + "/write/" + taskId + "/file_renamed_" + index);
+            boolean success = fs.rename(oldPath, newPath);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "rename", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute rename at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "rename", "error", duration, 1);
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            LOG.error("Unexpected error in rename at index {}: {}", index, e.getMessage(), e);
+            return new OperationOutput(OperationOutput.OutputType.LONG, "rename", "error", duration, 1);
+        }
+    }
+
+    private OperationOutput executeGetFileStatus(int index, long startTime) {
+        try {
+            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
+            FileStatus status = fs.getFileStatus(filePath);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "get_file_status", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute get_file_status at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "get_file_status", "error", duration, 1);
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            LOG.error("Unexpected error in get_file_status at index {}: {}", index, e.getMessage(), e);
+            return new OperationOutput(OperationOutput.OutputType.LONG, "get_file_status", "error", duration, 1);
+        }
+    }
+
+    private OperationOutput executeExists(int index, long startTime) {
+        try {
+            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
+            boolean exists = fs.exists(filePath);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "exists", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute exists at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "exists", "error", duration, 1);
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            LOG.error("Unexpected error in exists at index {}: {}", index, e.getMessage(), e);
+            return new OperationOutput(OperationOutput.OutputType.LONG, "exists", "error", duration, 1);
+        }
+    }
+
+    private OperationOutput executeSetPermission(int index, long startTime) {
+        try {
+            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
+            short permission = (short) 644;
+            fs.setPermission(filePath, new org.apache.hadoop.fs.permission.FsPermission(permission));
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "set_permission", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute set_permission at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "set_permission", "error", duration, 1);
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            LOG.error("Unexpected error in set_permission at index {}: {}", index, e.getMessage(), e);
+            return new OperationOutput(OperationOutput.OutputType.LONG, "set_permission", "error", duration, 1);
+        }
+    }
+
+    private OperationOutput executeAppend(int index, long startTime) {
+        FSDataOutputStream out = null;
+        try {
+            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
+            byte[] data = generateData(1024);
+            out = fs.append(filePath);
+            out.write(data);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "append", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute append at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "append", "error", duration, 1);
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            LOG.error("Unexpected error in append at index {}: {}", index, e.getMessage(), e);
+            return new OperationOutput(OperationOutput.OutputType.LONG, "append", "error", duration, 1);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    LOG.warn("Failed to close output stream: {}", e.getMessage());
+                }
+            }
+        }
+    }
+
+    private OperationOutput executeCreateSymlink(int index, long startTime) {
+        try {
+            Path targetPath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
+            Path linkPath = new Path(baseDir + "/link_" + taskId + "/link_" + index);
+            fs.createSymlink(targetPath, linkPath, false);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "create_symlink", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute create_symlink at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "create_symlink", "error", duration, 1);
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            LOG.error("Unexpected error in create_symlink at index {}: {}", index, e.getMessage(), e);
+            return new OperationOutput(OperationOutput.OutputType.LONG, "create_symlink", "error", duration, 1);
+        }
     }
 }

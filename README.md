@@ -4,13 +4,19 @@
 
 ## 功能特性
 
-- 支持多种 HDFS 操作类型：
-  - `mkdir` - 创建目录
-  - `write` - 写入文件
-  - `read` - 读取文件
-  - `delete_dir` - 删除目录
-  - `delete_file` - 删除文件
-  - `ls` - 列出文件
+ - 支持多种 HDFS 操作类型：
+   - `mkdir` - 创建目录
+   - `write` - 写入文件
+   - `read` - 读取文件
+   - `delete_dir` - 删除目录
+   - `delete_file` - 删除文件
+   - `ls` - 列出文件
+   - `rename` - 重命名文件
+   - `get_file_status` - 获取文件状态
+   - `exists` - 检查文件是否存在
+   - `set_permission` - 设置文件权限
+   - `append` - 追加数据到文件
+   - `create_symlink` - 创建符号链接
 
  - 可配置参数：
    - Map 任务数量
@@ -47,7 +53,7 @@ mvn clean package
                 --fileSize 10 \
                 --opsPerMapper 1000 \
                 --threadPoolSize 10 \
-                --operations mkdir,write,read,delete_dir,delete_file,ls"
+                --operations mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink"
  ```
 
 ### 参数说明
@@ -59,7 +65,7 @@ mvn clean package
  | `--mapMemoryMb` | Map 任务内存（MB） | 1024 |
  | `--reduceMemoryMb` | Reduce 任务内存（MB） | 512 |
  | `--baseDir` | 基础测试目录 | /test/hdfsrpc |
- | `--operations` | 操作类型（逗号分隔） | mkdir,write,read,delete_dir,delete_file,ls |
+  | `--operations` | 操作类型（逗号分隔） | mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink |
  | `--fileSize` | 文件大小（MB） | 10 |
  | `--opsPerMapper` | 每个 Mapper 的操作次数 | 1000 |
  | `--fileCount` | 每个操作的文件数量 | 100 |
@@ -75,6 +81,12 @@ mvn clean package
 - `delete_dir` - 删除目录测试
 - `delete_file` - 删除文件测试
 - `ls` - 列出文件测试
+- `rename` - 重命名文件测试
+- `get_file_status` - 获取文件状态测试
+- `exists` - 检查文件是否存在测试
+- `set_permission` - 设置文件权限测试
+- `append` - 追加数据到文件测试
+- `create_symlink` - 创建符号链接测试
 
 ### 示例
 

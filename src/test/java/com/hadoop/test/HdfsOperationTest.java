@@ -372,4 +372,146 @@ public class HdfsOperationTest {
         assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
         assertEquals("error", result.getMeasurementType());
     }
+
+    @Test
+    public void testExecuteRename() throws IOException {
+        operation.execute("write", 0);
+
+        Path oldPath = new Path(testBaseDir + "/write/1/file_0");
+        assertTrue(localFs.exists(oldPath));
+
+        OperationOutput result = operation.execute("rename", 0);
+
+        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
+        assertEquals("rename", result.getOperationType());
+        assertEquals("duration", result.getMeasurementType());
+        assertNotNull(result.getValue());
+        assertTrue(Long.parseLong(result.getValue().toString()) >= 0);
+
+        Path newPath = new Path(testBaseDir + "/write/1/file_renamed_0");
+        assertFalse(localFs.exists(oldPath));
+        assertTrue(localFs.exists(newPath));
+    }
+
+    @Test
+    public void testExecuteGetFileStatus() {
+        operation.execute("write", 0);
+
+        OperationOutput result = operation.execute("get_file_status", 0);
+
+        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
+        assertEquals("get_file_status", result.getOperationType());
+        assertEquals("duration", result.getMeasurementType());
+        assertNotNull(result.getValue());
+        assertTrue(Long.parseLong(result.getValue().toString()) >= 0);
+    }
+
+    @Test
+    public void testExecuteExists() {
+        operation.execute("write", 0);
+
+        OperationOutput result = operation.execute("exists", 0);
+
+        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
+        assertEquals("exists", result.getOperationType());
+        assertEquals("duration", result.getMeasurementType());
+        assertNotNull(result.getValue());
+        assertTrue(Long.parseLong(result.getValue().toString()) >= 0);
+    }
+
+    @Test
+    public void testExecuteExistsNonExistent() {
+        OperationOutput result = operation.execute("exists", 0);
+
+        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
+        assertEquals("exists", result.getOperationType());
+        assertEquals("duration", result.getMeasurementType());
+        assertNotNull(result.getValue());
+        assertTrue(Long.parseLong(result.getValue().toString()) >= 0);
+    }
+
+    @Test
+    public void testExecuteSetPermission() {
+        operation.execute("write", 0);
+
+        OperationOutput result = operation.execute("set_permission", 0);
+
+        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
+        assertEquals("set_permission", result.getOperationType());
+        assertEquals("duration", result.getMeasurementType());
+        assertNotNull(result.getValue());
+        assertTrue(Long.parseLong(result.getValue().toString()) >= 0);
+    }
+
+    @Test
+    public void testExecuteAppend() throws IOException {
+        operation.execute("write", 0);
+
+        Path filePath = new Path(testBaseDir + "/write/1/file_0");
+        assertTrue(localFs.exists(filePath));
+
+        OperationOutput result = operation.execute("append", 0);
+
+        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
+        assertEquals("append", result.getOperationType());
+        assertNotNull(result.getValue());
+    }
+
+    @Test
+    public void testExecuteCreateSymlink() throws IOException {
+        operation.execute("write", 0);
+
+        Path targetPath = new Path(testBaseDir + "/write/1/file_0");
+        assertTrue(localFs.exists(targetPath));
+
+        Path linkDir = new Path(testBaseDir + "/link_1");
+        localFs.mkdirs(linkDir);
+
+        OperationOutput result = operation.execute("create_symlink", 0);
+
+        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
+        assertEquals("create_symlink", result.getOperationType());
+        assertNotNull(result.getValue());
+    }
+
+    @Test
+    public void testExecuteAsyncRename() throws Exception {
+        operation.execute("write", 0);
+
+        Path oldPath = new Path(testBaseDir + "/write/1/file_0");
+        CompletableFuture<OperationOutput> future = operation.executeAsync("rename", 0);
+        OperationOutput result = future.get(10, TimeUnit.SECONDS);
+
+        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
+        assertEquals("rename", result.getOperationType());
+
+        Path newPath = new Path(testBaseDir + "/write/1/file_renamed_0");
+        assertFalse(localFs.exists(oldPath));
+        assertTrue(localFs.exists(newPath));
+    }
+
+    @Test
+    public void testExecuteAsyncAppend() throws Exception {
+        operation.execute("write", 0);
+
+        Path filePath = new Path(testBaseDir + "/write/1/file_0");
+        CompletableFuture<OperationOutput> future = operation.executeAsync("append", 0);
+        OperationOutput result = future.get(10, TimeUnit.SECONDS);
+
+        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
+        assertEquals("append", result.getOperationType());
+
+        assertTrue(localFs.exists(filePath));
+    }
+
+    @Test
+    public void testExecuteAsyncSetPermission() throws Exception {
+        operation.execute("write", 0);
+
+        CompletableFuture<OperationOutput> future = operation.executeAsync("set_permission", 0);
+        OperationOutput result = future.get(10, TimeUnit.SECONDS);
+
+        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
+        assertEquals("set_permission", result.getOperationType());
+    }
 }

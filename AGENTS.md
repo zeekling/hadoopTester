@@ -22,6 +22,7 @@ This is a Maven-based Java project. Use these commands for development:
 
 ### Lint/Typecheck
 No explicit lint or typecheck plugins are configured. Before committing changes, ensure all tests pass with `mvn test`.
+- Use `@SuppressWarnings("resource")` on @Before/@After methods in HdfsOperationTest that delete test directories
 
 ## Project Structure
 
@@ -31,7 +32,7 @@ src/main/java/com/hadoop/test/
 ├── HDFSRpcTest.java        # Main entry point, implements Tool
 ├── ConfigOption.java       # Configuration options with defaults
 ├── Constants.java          # Application constants
-├── HdfsOperation.java      # HDFS operation implementations
+├── HdfsOperation.java      # HDFS operation implementations (12 operations)
 ├── SliveMapper.java        # Hadoop mapper implementation
 ├── SliveReducer.java       # Hadoop reducer implementation
 ├── SlivePartitioner.java   # Custom partitioner
@@ -92,6 +93,7 @@ src/main/java/com/hadoop/test/
 - Configuration objects should be passed, not stored statically
 - Use Hadoop's `Text` class instead of `String` for keys/values
 - Follow Hadoop's serialization patterns for custom types
+- Memory configurations (mapMemoryMb, reduceMemoryMb) use String type and are set directly to Hadoop config
 
 ### Comments & Documentation
 - Use Javadoc for public classes and methods
@@ -111,6 +113,7 @@ src/main/java/com/hadoop/test/
 - Java version: 17 (defined in maven.compiler.release)
 - Lombok: 1.18.42 for annotation processing
 - JUnit: 4.13.2 for testing
+- Mockito: 4.11.0 for mocking and testing
 
 ## Common Patterns
 
@@ -146,20 +149,8 @@ job.setOutputValueClass(Text.class);
 String row = String.format("| %-10s | %4d | %10d |", "op", count, total);
 ```
 
-### Mocking in Tests
-```java
-output = mock(OutputCollector.class);
-verify(reporter).setStatus(contains("message"));
-```
-
-## Development Notes
-
-- The project uses Hadoop MapReduce (old API) with `mapred` package
-- Lombok is used for reducing boilerplate code with `@Getter` annotations
-- All main classes should implement `Tool` interface
-- Use `DummyInputFormat` for testing without real input data
-- Configuration options should have sensible defaults
-- Log at appropriate levels, avoid excessive DEBUG logging in production
-- Memory configurations (mapMemoryMb, reduceMemoryMb) use String type and are set directly to Hadoop config
-- Test results use table format with `String.format` for aligned columns
-- Mockito is used for testing with `verify()` and `any()` matchers
+### HDFS Operations
+All operations in HdfsOperation follow this pattern:
+- Method name: `execute[OperationName](int index, long startTime)`
+- Returns: `new OperationOutput(OutputType.LONG, "operation_name", "duration", duration, 1)`
+- Operations: mkdir, write, read, delete_dir, delete_file, ls, rename, get_file_status, exists, set_permission, append, create_symlink
