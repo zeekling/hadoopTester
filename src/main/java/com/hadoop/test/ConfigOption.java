@@ -14,7 +14,7 @@ public class ConfigOption<T> extends Option {
     static final ConfigOption<String> BASE_DIR = new ConfigOption<String>("baseDir", true, "Base directory path", PREFIX + ".base.dir",
             "/test/hdfsrpc");
 
-    static final ConfigOption<String> OPERATIONS = new ConfigOption<String>("operations", true, "Operations to run (comma separated): mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink", PREFIX + ".operations", "mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink");
+    static final ConfigOption<String> OPERATIONS = new ConfigOption<String>("operations", true, "Operations to run (comma separated): mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate", PREFIX + ".operations", "mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate");
 
     static final ConfigOption<Integer> FILE_SIZE = new ConfigOption<Integer>("fileSize", true, "File size in MB", PREFIX + ".file.size", 10);
 

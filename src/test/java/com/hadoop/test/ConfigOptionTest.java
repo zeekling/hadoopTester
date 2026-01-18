@@ -18,7 +18,7 @@ public class ConfigOptionTest {
 
     @Test
     public void testOperationsDefaultValue() {
-        assertEquals("mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink", ConfigOption.OPERATIONS.getDefaultValue());
+        assertEquals("mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate", ConfigOption.OPERATIONS.getDefaultValue());
     }
 
     @Test

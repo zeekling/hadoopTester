@@ -76,6 +76,8 @@ public class HdfsOperation {
                     return executeAppend(index, startTime);
                 case "create_symlink":
                     return executeCreateSymlink(index, startTime);
+                case "append_truncate":
+                    return executeAppendTruncate(index, startTime);
                 default:
                     throw new IllegalArgumentException("Unknown operation type: " + operationType);
             }
@@ -342,6 +344,55 @@ public class HdfsOperation {
             long duration = System.currentTimeMillis() - startTime;
             LOG.error("Unexpected error in create_symlink at index {}: {}", index, e.getMessage(), e);
             return new OperationOutput(OperationOutput.OutputType.LONG, "create_symlink", "error", duration, 1);
+        }
+    }
+
+    private OperationOutput executeAppendTruncate(int index, long startTime) {
+        FSDataOutputStream out = null;
+        try {
+            Path filePath = new Path(baseDir + "/append_truncate/" + taskId + "/file_" + index);
+            Path parentDir = new Path(baseDir + "/append_truncate/" + taskId);
+            
+            if (!fs.exists(parentDir)) {
+                fs.mkdirs(parentDir);
+            }
+            
+            if (!fs.exists(filePath)) {
+                byte[] initialData = generateData(1024);
+                out = fs.create(filePath, true);
+                out.write(initialData);
+            } else {
+                out = fs.append(filePath);
+            }
+            
+            int iterations = 10;
+
+            for (int i = 0; i < iterations; i++) {
+                byte[] data = generateData(512);
+                out.write(data);
+                out.flush();
+                out.close();
+                fs.truncate(filePath, 500);
+            }
+            
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "append_truncate", "duration", duration, 1);
+        } catch (IOException e) {
+            LOG.error("Failed to execute append_truncate at index {}: {}", index, e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            return new OperationOutput(OperationOutput.OutputType.LONG, "append_truncate", "error", duration, 1);
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            LOG.error("Unexpected error in append_truncate at index {}: {}", index, e.getMessage(), e);
+            return new OperationOutput(OperationOutput.OutputType.LONG, "append_truncate", "error", duration, 1);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    LOG.warn("Failed to close output stream: {}", e.getMessage());
+                }
+            }
         }
     }
 }

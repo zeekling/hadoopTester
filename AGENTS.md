@@ -32,7 +32,7 @@ src/main/java/com/hadoop/test/
 ├── HDFSRpcTest.java        # Main entry point, implements Tool
 ├── ConfigOption.java       # Configuration options with defaults
 ├── Constants.java          # Application constants
-├── HdfsOperation.java      # HDFS operation implementations (12 ops)
+ ├── HdfsOperation.java      # HDFS operation implementations (13 ops)
 ├── SliveMapper.java        # Hadoop mapper implementation
 ├── SliveReducer.java       # Hadoop reducer implementation
 ├── SlivePartitioner.java   # Custom partitioner
@@ -137,7 +137,7 @@ job.setOutputValueClass(Text.class);
 All operations in HdfsOperation follow this pattern:
 - Method: `execute[OperationName](int index, long startTime)`
 - Returns: `new OperationOutput(OutputType.LONG, "operation_name", "duration", duration, 1)`
-- Operations: mkdir, write, read, delete_dir, delete_file, ls, rename, get_file_status, exists, set_permission, append, create_symlink
+ - Operations: mkdir, write, read, delete_dir, delete_file, ls, rename, get_file_status, exists, set_permission, append, create_symlink, append_truncate
 
 ### Async Operations
 ```java

@@ -514,4 +514,26 @@ public class HdfsOperationTest {
         assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
         assertEquals("set_permission", result.getOperationType());
     }
+
+    @Test
+    public void testExecuteAppendTruncate() throws Exception {
+        OperationOutput result = operation.execute("append_truncate", 0);
+
+        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
+        assertEquals("append_truncate", result.getOperationType());
+        assertNotNull(result.getValue());
+        assertTrue((Long) result.getValue() >= 0);
+
+        Path filePath = new Path(testBaseDir + "/append_truncate/1/file_0");
+        assertTrue(localFs.exists(filePath));
+    }
+
+    @Test
+    public void testExecuteAsyncAppendTruncate() throws Exception {
+        CompletableFuture<OperationOutput> future = operation.executeAsync("append_truncate", 0);
+        OperationOutput result = future.get(10, TimeUnit.SECONDS);
+
+        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
+        assertEquals("append_truncate", result.getOperationType());
+    }
 }

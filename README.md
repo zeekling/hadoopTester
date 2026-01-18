@@ -5,18 +5,19 @@
 ## 功能特性
 
  - 支持多种 HDFS 操作类型：
-   - `mkdir` - 创建目录
-   - `write` - 写入文件
-   - `read` - 读取文件
-   - `delete_dir` - 删除目录
-   - `delete_file` - 删除文件
-   - `ls` - 列出文件
-   - `rename` - 重命名文件
-   - `get_file_status` - 获取文件状态
-   - `exists` - 检查文件是否存在
-   - `set_permission` - 设置文件权限
-   - `append` - 追加数据到文件
-   - `create_symlink` - 创建符号链接
+    - `mkdir` - 创建目录
+    - `write` - 写入文件
+    - `read` - 读取文件
+    - `delete_dir` - 删除目录
+    - `delete_file` - 删除文件
+    - `ls` - 列出文件
+    - `rename` - 重命名文件
+    - `get_file_status` - 获取文件状态
+    - `exists` - 检查文件是否存在
+    - `set_permission` - 设置文件权限
+    - `append` - 追加数据到文件
+    - `create_symlink` - 创建符号链接
+    - `append_truncate` - 对同一文件频繁执行append和truncate操作
 
  - 可配置参数：
    - Map 任务数量
@@ -53,7 +54,7 @@ mvn clean package
                 --fileSize 10 \
                 --opsPerMapper 1000 \
                 --threadPoolSize 10 \
-                --operations mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink"
+                 --operations mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate"
  ```
 
  ### 参数说明
@@ -74,7 +75,7 @@ mvn clean package
   | `--help`            | 显示帮助信息              | -         |
 
 **注**：`--operations` 参数的完整默认值为：
-`mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink`
+`mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate`
 
  ### 操作类型
 
@@ -90,6 +91,7 @@ mvn clean package
 - `set_permission` - 设置文件权限测试
 - `append` - 追加数据到文件测试
 - `create_symlink` - 创建符号链接测试
+- `append_truncate` - 对同一文件频繁执行append和truncate操作测试
 
 ### 示例
 
