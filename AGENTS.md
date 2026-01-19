@@ -10,19 +10,17 @@ This is a Maven-based Java project. Use these commands for development:
 - **Build project**: `mvn clean compile`
 - **Run tests**: `mvn test`
 - **Package JAR**: `mvn clean package`
-- **Copy dependencies**: `mvn dependency:copy-dependencies` (copies to target/lib/)
 - **Run main class**: `mvn exec:java -Dexec.mainClass="com.hadoop.test.HDFSRpcTest"`
-- **Run with arguments**: `mvn exec:java -Dexec.mainClass="com.hadoop.test.HDFSRpcTest" -Dexec.args="--maps 5 --reduces 2 --baseDir /test/path"`
+- **Run with args**: `mvn exec:java -Dexec.mainClass="com.hadoop.test.HDFSRpcTest" -Dexec.args="--maps 5 --baseDir /test"`
 
 ### Test Commands
 - **Run all tests**: `mvn test`
 - **Run specific test class**: `mvn test -Dtest=ClassName`
 - **Run specific test method**: `mvn test -Dtest=ClassName#methodName`
-- **Skip tests during build**: `mvn clean package -DskipTests`
+- **Skip tests**: `mvn clean package -DskipTests`
 
 ### Lint/Typecheck
-No explicit lint or typecheck plugins are configured. Before committing changes, ensure all tests pass with `mvn test`.
-- Use `@SuppressWarnings("resource")` on @Before/@After methods that delete test directories
+No explicit lint plugins configured. Ensure all tests pass before committing. Use `@SuppressWarnings("resource")` on @Before/@After methods that delete test directories.
 
 ## Project Structure
 
@@ -32,7 +30,7 @@ src/main/java/com/hadoop/test/
 ├── HDFSRpcTest.java        # Main entry point, implements Tool
 ├── ConfigOption.java       # Configuration options with defaults
 ├── Constants.java          # Application constants
- ├── HdfsOperation.java      # HDFS operation implementations (13 ops)
+├── HdfsOperation.java      # HDFS operation implementations (13 ops)
 ├── SliveMapper.java        # Hadoop mapper implementation
 ├── SliveReducer.java       # Hadoop reducer implementation
 ├── SlivePartitioner.java   # Custom partitioner
@@ -44,9 +42,9 @@ src/main/java/com/hadoop/test/
 
 ### Package & Imports
 - Package: `com.hadoop.test`
-- Import order: Standard Java libraries, third-party libraries, project imports
-- Use wildcard imports sparingly, prefer explicit imports
-- Lombok imports grouped with other annotations
+- Import order: Standard Java, third-party, project imports (grouped/sorted)
+- Prefer explicit imports over wildcards
+- Lombok annotations grouped with other annotations
 
 ### Naming Conventions
 - **Classes**: PascalCase (e.g., `ArgumentParser`, `HDFSRpcTest`)
@@ -57,26 +55,23 @@ src/main/java/com/hadoop/test/
 - **Static final fields**: UPPER_SNAKE_CASE
 
 ### Class Structure
-1. Package declaration, 2. Imports (grouped/sorted), 3. Class-level Javadoc, 4. Class declaration
+1. Package declaration, 2. Imports (grouped), 3. Class-level Javadoc, 4. Class declaration
 5. Static fields (constants first), 6. Instance fields, 7. Constructors, 8. Static methods
-9. Instance methods (public, then protected, then private), 10. Inner/nested classes
+9. Instance methods (public→protected→private), 10. Inner/nested classes
 
 ### Lombok Usage
-- Use `@Getter` for fields that need getters
+- Use `@Getter` for fields needing getters
 - Use `@Setter` only when necessary
 - Prefer explicit methods for complex logic over Lombok shortcuts
-- Place Lombok annotations at field level or class level as appropriate
+- Place Lombok annotations at field or class level as appropriate
 
-### Error Handling
+### Error Handling & Logging
 - Use specific exception types, avoid generic `Exception`
 - Log errors using SLF4J: `LOG.error("Error message", exception)`
 - Wrap checked exceptions in RuntimeException when appropriate
 - Use `IllegalArgumentException` for invalid parameters
 - Include meaningful error messages with context
-
-### Logging
-- Use SLF4J with `LoggerFactory.getLogger(ClassName.class)`
-- Field name: `private static final Logger LOG`
+- Use SLF4J with `LoggerFactory.getLogger(ClassName.class)`, field name: `private static final Logger LOG`
 - Log levels: ERROR for errors, WARN for warnings, INFO for important events, DEBUG for debugging
 - Include context in log messages, avoid string concatenation in hot paths
 
@@ -88,21 +83,18 @@ src/main/java/com/hadoop/test/
 - Memory configs (mapMemoryMb, reduceMemoryMb) use String type set directly to Hadoop config
 
 ### Comments & Documentation
-- Use Javadoc for public classes and methods
-- Include `@param`, `@return`, and `@throws` where applicable
+- Use Javadoc for public classes and methods with `@param`, `@return`, and `@throws` where applicable
 - Use inline comments sparingly, prefer self-documenting code
 - Document complex business logic or non-obvious implementations
 
 ### Code Formatting
-- Indentation: 4 spaces (no tabs)
-- Line length: Prefer under 120 characters
+- Indentation: 4 spaces (no tabs), line length: prefer under 120 characters
 - Braces: K&R style (opening brace on same line)
-- Spacing: Single blank line between methods, logical groups
-- No trailing whitespace
+- Spacing: Single blank line between methods and logical groups, no trailing whitespace
 
 ### Dependencies Management
 - Hadoop 3.4.2, Java 17 (maven.compiler.release)
-- Lombok 1.18.42 for annotations, JUnit 4.13.2, Mockito 4.11.0 for testing
+- Lombok 1.18.42, JUnit 4.13.2, Mockito 4.11.0
 
 ## Common Patterns
 
@@ -137,7 +129,7 @@ job.setOutputValueClass(Text.class);
 All operations in HdfsOperation follow this pattern:
 - Method: `execute[OperationName](int index, long startTime)`
 - Returns: `new OperationOutput(OutputType.LONG, "operation_name", "duration", duration, 1)`
- - Operations: mkdir, write, read, delete_dir, delete_file, ls, rename, get_file_status, exists, set_permission, append, create_symlink, append_truncate
+- Operations: mkdir, write, read, delete_dir, delete_file, ls, rename, get_file_status, exists, set_permission, append, create_symlink, append_truncate
 
 ### Async Operations
 ```java
@@ -154,15 +146,21 @@ String row = String.format("| %-10s | %4d | %10d |", "op", count, total);
 ```java
 output = mock(OutputCollector.class);
 verify(reporter).setStatus(contains("message"));
+doAnswer(invocation -> {
+    collectedKeys.add(invocation.getArgument(0));
+    return null;
+}).when(output).collect(any(), any(Text.class));
 ```
 
 ## Development Notes
 
-- The project uses Hadoop MapReduce (old API) with `mapred` package
-- Lombok is used for reducing boilerplate code with `@Getter` annotations
+- Project uses Hadoop MapReduce (old API) with `mapred` package
+- Lombok reduces boilerplate with `@Getter` annotations
 - Use `DummyInputFormat` for testing without real input data
 - Configuration options should have sensible defaults
-- Log at appropriate levels, avoid excessive DEBUG logging in production
+- Log at appropriate levels, avoid excessive DEBUG logging
 - Test results use table format with `String.format` for aligned columns
-- Mockito is used for testing with `verify()` and `any()` matchers
-- HDFS operations support 12 different operation types for comprehensive RPC testing
+- Mockito is used with `verify()` and `any()` matchers
+- HDFS operations support 13 different operation types for comprehensive RPC testing
+- When SliveReducer outputs with null key, use `any()` instead of `any(Text.class)` in test mocks
+- SliveMapper outputs 1 extra collect call for "total_errors" at the end of each map
