@@ -118,15 +118,7 @@ public class HDFSRpcTest implements Tool {
                 return;
             }
 
-            System.out.println("\n========== Test Results ==========");
-            String header = "+------------+------------+------+------------+-----------+-----------+-----------+";
-            String title = "| key    | Operation  | Count| Total(ms)  | Avg(ms)   | Min(ms)   | Max(ms)   |";
-            String divider = "+------------+------------+------+------------+-----------+-----------+-----------+";
-            
-            System.out.println(header);
-            System.out.println(title);
-            System.out.println(divider);
-            
+            System.out.println("\n=============================== Test Results =============================================");
             org.apache.hadoop.fs.FSDataInputStream in = fs.open(resultPath);
             java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(in));
             String line;
@@ -135,9 +127,7 @@ public class HDFSRpcTest implements Tool {
             }
             reader.close();
             in.close();
-            
-            System.out.println(divider);
-            System.out.println("===================================\n");
+            System.out.println("=================================================================================\n");
         } catch (IOException e) {
             LOG.error("Error reading results: ", e);
         }

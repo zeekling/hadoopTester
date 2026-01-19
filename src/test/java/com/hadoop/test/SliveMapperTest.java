@@ -76,10 +76,10 @@ public class SliveMapperTest {
     public void testMapWithDummyInput() throws IOException {
         Object key = "test_key";
         Object value = "test_value";
-        
+
         mapper.map(key, value, output, reporter);
-        
-        verify(output, times(10)).collect(any(Text.class), any(Text.class));
+
+        verify(output, times(11)).collect(any(Text.class), any(Text.class));
         verify(reporter, atLeast(2)).setStatus(anyString());
     }
 
@@ -98,16 +98,20 @@ public class SliveMapperTest {
     public void testMapWithDuration() throws IOException {
         Object key = "test_key";
         Object value = "test_value";
-        
+
         mapper.map(key, value, output, reporter);
-        
+
         verify(output, times(10)).collect(any(Text.class), argThat(text -> {
-            try {
-                Long.parseLong(text.toString());
-                return true;
-            } catch (NumberFormatException e) {
-                return false;
+            String[] parts = text.toString().split(":");
+            if (parts.length == 2) {
+                try {
+                    Long.parseLong(parts[1]);
+                    return true;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
             }
+            return false;
         }));
     }
 
@@ -131,13 +135,13 @@ public class SliveMapperTest {
         conf.set(ConfigOption.OPERATIONS.getCfgOption(), "mkdir,write,read,delete_dir,delete_file,ls");
         conf.setInt(ConfigOption.OPS_PER_MAPPER.getCfgOption(), 6);
         mapper.configure(conf);
-        
+
         Object key = "test_key";
         Object value = "test_value";
-        
+
         mapper.map(key, value, output, reporter);
-        
-        verify(output, times(6)).collect(any(Text.class), any(Text.class));
+
+        verify(output, times(7)).collect(any(Text.class), any(Text.class));
     }
 
     @Test

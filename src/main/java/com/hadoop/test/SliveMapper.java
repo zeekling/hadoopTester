@@ -107,9 +107,8 @@ public class SliveMapper extends MapReduceBase implements
                 .thenAccept(result -> {
                     try {
                         long duration = Long.parseLong(result.getValue().toString());
-                        String opKey = opType;
-                        String opValue = String.valueOf(duration);
-                        output.collect(new Text(opKey), new Text(opValue));
+                        String opValue = result.getMeasurementType() + ":" + duration;
+                        output.collect(new Text(opType), new Text(opValue));
 
                         synchronized (completedOps) {
                             completedOps[0]++;
@@ -129,6 +128,7 @@ public class SliveMapper extends MapReduceBase implements
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         operation.shutdown();
 
+        output.collect(new Text("total_errors"), new Text(String.valueOf(failedOps[0])));
         logAndSetStatus(reporter, "Completed " + completedOps[0] + " operations successfully, " + failedOps[0] + " failed");
     }
 }
