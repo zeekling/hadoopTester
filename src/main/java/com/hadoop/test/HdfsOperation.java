@@ -5,7 +5,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +19,16 @@ public class HdfsOperation {
 
     private static final Logger LOG = LoggerFactory.getLogger(HdfsOperation.class);
     private static final Random RANDOM = new Random();
+
+    private static final int BUFFER_SIZE = 8192;
+    private static final int APPEND_DATA_SIZE = 1024;
+    private static final int APPEND_TRUNCATE_DATA_SIZE = 512;
+    private static final int APPEND_TRUNCATE_ITERATIONS = 10;
+    private static final int APPEND_TRUNCATE_TRUNCATE_SIZE = 500;
+    private static final short FILE_PERMISSION = 0644;
+
+    private static final String DURATION = "duration";
+    private static final String ERROR = "error";
 
     private final FileSystem fs;
     private final String baseDir;
@@ -81,148 +91,190 @@ public class HdfsOperation {
                 default:
                     throw new IllegalArgumentException("Unknown operation type: " + operationType);
             }
+        } catch (IllegalArgumentException e) {
+            LOG.error("Unknown operation type: {}", operationType, e);
+            return new OperationOutput(OperationOutput.OutputType.LONG, operationType, ERROR, -1L);
         } catch (Exception e) {
             LOG.error("Error executing operation {} at index {}", operationType, index, e);
-            return new OperationOutput(OperationOutput.OutputType.LONG, operationType, "error", -1L);
+            return createErrorOutput(operationType, 0);
         }
     }
 
     private OperationOutput executeMkdir(int index, long startTime) {
-        try {
-            Path dirPath = new Path(baseDir + "/mkdir/" + taskId + "/dir_" + index);
-            boolean success = fs.mkdirs(dirPath);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "mkdir", "duration", duration, 1);
-        } catch (IOException e) {
-            LOG.error("Failed to execute mkdir at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "mkdir", "error", duration, 1);
-        } catch (Exception e) {
-            long duration = System.currentTimeMillis() - startTime;
-            LOG.error("Unexpected error in mkdir at index {}: {}", index, e.getMessage(), e);
-            return new OperationOutput(OperationOutput.OutputType.LONG, "mkdir", "error", duration, 1);
-        }
+        return executeOperation("mkdir", index, startTime, () -> {
+            Path dirPath = buildPath("mkdir", "dir_" + index);
+            fs.mkdirs(dirPath);
+        });
     }
 
     private OperationOutput executeWrite(int index, long startTime) {
         FSDataOutputStream out = null;
         try {
-            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
+            Path filePath = buildPath("write", "file_" + index);
             byte[] data = generateData(fileSize * 1024 * 1024);
-
             out = fs.create(filePath, true);
-
             out.write(data);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "write", "duration", duration, 1);
+            return createSuccessOutput("write", startTime);
         } catch (IOException e) {
             LOG.error("Failed to execute write at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "write", "error", duration, 1);
-        } catch (Exception e) {
-            long duration = System.currentTimeMillis() - startTime;
-            LOG.error("Unexpected error in write at index {}: {}", index, e.getMessage(), e);
-            return new OperationOutput(OperationOutput.OutputType.LONG, "write", "error", duration, 1);
+            return createErrorOutput("write", startTime);
         } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    LOG.warn("Failed to close output stream: {}", e.getMessage());
-                }
-            }
+            closeQuietly(out);
         }
     }
 
     private OperationOutput executeRead(int index, long startTime) {
         FSDataInputStream in = null;
         try {
-            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
+            Path filePath = buildPath("write", "file_" + index);
             in = fs.open(filePath);
-
-
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[BUFFER_SIZE];
             int totalRead = 0;
             int bytesRead;
             while ((bytesRead = in.read(buffer)) > 0) {
                 totalRead += bytesRead;
             }
             LOG.debug("Read {} bytes from file {}", totalRead, filePath);
-
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "read", "duration", duration, 1);
+            return createSuccessOutput("read", startTime);
         } catch (IOException e) {
             LOG.error("Failed to execute read at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "read", "error", duration, 1);
-        } catch (Exception e) {
-            LOG.error("Unexpected error in read at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "read", "error", duration, 1);
+            return createErrorOutput("read", startTime);
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    LOG.warn("Failed to close input stream: {}", e.getMessage());
-                }
-            }
+            closeQuietly(in);
         }
     }
 
     private OperationOutput executeDeleteDir(int index, long startTime) {
-        try {
-            Path dirPath = new Path(baseDir + "/mkdir/" + taskId + "/dir_" + index);
-
-            boolean success = fs.delete(dirPath, true);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "delete_dir", "duration", duration, 1);
-        } catch (IOException e) {
-            LOG.error("Failed to execute delete_dir at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "delete_dir", "error", duration, 1);
-        } catch (Exception e) {
-            LOG.error("Unexpected error in delete_dir at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "delete_dir", "error", duration, 1);
-        }
+        return executeOperation("delete_dir", index, startTime, () -> {
+            Path dirPath = buildPath("mkdir", "dir_" + index);
+            fs.delete(dirPath, true);
+        });
     }
 
     private OperationOutput executeDeleteFile(int index, long startTime) {
-        try {
-            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
-
-            boolean success = fs.delete(filePath, false);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "delete_file", "duration", duration, 1);
-        } catch (IOException e) {
-            LOG.error("Failed to execute delete_file at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "delete_file", "error", duration, 1);
-        } catch (Exception e) {
-            LOG.error("Unexpected error in delete_file at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "delete_file", "error", duration, 1);
-        }
+        return executeOperation("delete_file", index, startTime, () -> {
+            Path filePath = buildPath("write", "file_" + index);
+            fs.delete(filePath, false);
+        });
     }
 
     private OperationOutput executeList(int index, long startTime) {
+        return executeOperation("ls", index, startTime, () -> {
+            Path dirPath = buildPath("write", "");
+            fs.listStatus(dirPath);
+        });
+    }
+
+    private OperationOutput executeRename(int index, long startTime) {
+        return executeOperation("rename", index, startTime, () -> {
+            Path oldPath = buildPath("write", "file_" + index);
+            Path newPath = buildPath("write", "file_renamed_" + index);
+            fs.rename(oldPath, newPath);
+        });
+    }
+
+    private OperationOutput executeGetFileStatus(int index, long startTime) {
+        return executeOperation("get_file_status", index, startTime, () -> {
+            Path filePath = buildPath("write", "file_" + index);
+            fs.getFileStatus(filePath);
+        });
+    }
+
+    private OperationOutput executeExists(int index, long startTime) {
+        return executeOperation("exists", index, startTime, () -> {
+            Path filePath = buildPath("write", "file_" + index);
+            fs.exists(filePath);
+        });
+    }
+
+    private OperationOutput executeSetPermission(int index, long startTime) {
+        return executeOperation("set_permission", index, startTime, () -> {
+            Path filePath = buildPath("write", "file_" + index);
+            fs.setPermission(filePath, new FsPermission(FILE_PERMISSION));
+        });
+    }
+
+    private OperationOutput executeAppend(int index, long startTime) {
+        FSDataOutputStream out = null;
         try {
-            Path dirPath = new Path(baseDir + "/write/" + taskId);
-
-            FileStatus[] statuses = fs.listStatus(dirPath);
-
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "ls", "duration", duration, 1);
+            Path filePath = buildPath("write", "file_" + index);
+            byte[] data = generateData(APPEND_DATA_SIZE);
+            out = fs.append(filePath);
+            out.write(data);
+            return createSuccessOutput("append", startTime);
         } catch (IOException e) {
-            LOG.error("Failed to execute ls at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "ls", "error", duration, 1);
-        } catch (Exception e) {
-            LOG.error("Unexpected error in ls at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "ls", "error", duration, 1);
+            LOG.error("Failed to execute append at index {}: {}", index, e.getMessage(), e);
+            return createErrorOutput("append", startTime);
+        } finally {
+            closeQuietly(out);
         }
+    }
+
+    private OperationOutput executeCreateSymlink(int index, long startTime) {
+        return executeOperation("create_symlink", index, startTime, () -> {
+            Path targetPath = buildPath("write", "file_" + index);
+            Path linkPath = new Path(baseDir + "/link_" + taskId + "/link_" + index);
+            fs.createSymlink(targetPath, linkPath, false);
+        });
+    }
+
+    private OperationOutput executeAppendTruncate(int index, long startTime) {
+        FSDataOutputStream out = null;
+        try {
+            Path filePath = buildPath("append_truncate", "file_" + index);
+            Path parentDir = new Path(baseDir + "/append_truncate/" + taskId);
+
+            if (!fs.exists(parentDir)) {
+                fs.mkdirs(parentDir);
+            }
+
+            if (!fs.exists(filePath)) {
+                byte[] initialData = generateData(APPEND_DATA_SIZE);
+                out = fs.create(filePath, true);
+                out.write(initialData);
+            } else {
+                out = fs.append(filePath);
+            }
+
+            for (int i = 0; i < APPEND_TRUNCATE_ITERATIONS; i++) {
+                byte[] data = generateData(APPEND_TRUNCATE_DATA_SIZE);
+                out.write(data);
+                out.flush();
+                out.close();
+                fs.truncate(filePath, APPEND_TRUNCATE_TRUNCATE_SIZE);
+            }
+
+            return createSuccessOutput("append_truncate", startTime);
+        } catch (IOException e) {
+            LOG.error("Failed to execute append_truncate at index {}: {}", index, e.getMessage(), e);
+            return createErrorOutput("append_truncate", startTime);
+        } finally {
+            closeQuietly(out);
+        }
+    }
+
+    private OperationOutput executeOperation(String operationType, int index, long startTime, OperationRunnable operation) {
+        try {
+            operation.run();
+            return createSuccessOutput(operationType, startTime);
+        } catch (Exception e) {
+            LOG.error("Failed to execute {} at index {}: {}", operationType, index, e.getMessage(), e);
+            return createErrorOutput(operationType, startTime);
+        }
+    }
+
+    private OperationOutput createSuccessOutput(String operationType, long startTime) {
+        long duration = System.currentTimeMillis() - startTime;
+        return new OperationOutput(OperationOutput.OutputType.LONG, operationType, DURATION, duration, 1);
+    }
+
+    private OperationOutput createErrorOutput(String operationType, long startTime) {
+        long duration = System.currentTimeMillis() - startTime;
+        return new OperationOutput(OperationOutput.OutputType.LONG, operationType, ERROR, duration, 1);
+    }
+
+    private Path buildPath(String type, String suffix) {
+        return new Path(baseDir + "/" + type + "/" + taskId + "/" + suffix);
     }
 
     private byte[] generateData(int size) {
@@ -231,168 +283,28 @@ public class HdfsOperation {
         return data;
     }
 
-    private OperationOutput executeRename(int index, long startTime) {
-        try {
-            Path oldPath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
-            Path newPath = new Path(baseDir + "/write/" + taskId + "/file_renamed_" + index);
-            boolean success = fs.rename(oldPath, newPath);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "rename", "duration", duration, 1);
-        } catch (IOException e) {
-            LOG.error("Failed to execute rename at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "rename", "error", duration, 1);
-        } catch (Exception e) {
-            long duration = System.currentTimeMillis() - startTime;
-            LOG.error("Unexpected error in rename at index {}: {}", index, e.getMessage(), e);
-            return new OperationOutput(OperationOutput.OutputType.LONG, "rename", "error", duration, 1);
-        }
-    }
-
-    private OperationOutput executeGetFileStatus(int index, long startTime) {
-        try {
-            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
-            FileStatus status = fs.getFileStatus(filePath);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "get_file_status", "duration", duration, 1);
-        } catch (IOException e) {
-            LOG.error("Failed to execute get_file_status at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "get_file_status", "error", duration, 1);
-        } catch (Exception e) {
-            long duration = System.currentTimeMillis() - startTime;
-            LOG.error("Unexpected error in get_file_status at index {}: {}", index, e.getMessage(), e);
-            return new OperationOutput(OperationOutput.OutputType.LONG, "get_file_status", "error", duration, 1);
-        }
-    }
-
-    private OperationOutput executeExists(int index, long startTime) {
-        try {
-            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
-            boolean exists = fs.exists(filePath);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "exists", "duration", duration, 1);
-        } catch (IOException e) {
-            LOG.error("Failed to execute exists at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "exists", "error", duration, 1);
-        } catch (Exception e) {
-            long duration = System.currentTimeMillis() - startTime;
-            LOG.error("Unexpected error in exists at index {}: {}", index, e.getMessage(), e);
-            return new OperationOutput(OperationOutput.OutputType.LONG, "exists", "error", duration, 1);
-        }
-    }
-
-    private OperationOutput executeSetPermission(int index, long startTime) {
-        try {
-            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
-            short permission = (short) 644;
-            fs.setPermission(filePath, new org.apache.hadoop.fs.permission.FsPermission(permission));
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "set_permission", "duration", duration, 1);
-        } catch (IOException e) {
-            LOG.error("Failed to execute set_permission at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "set_permission", "error", duration, 1);
-        } catch (Exception e) {
-            long duration = System.currentTimeMillis() - startTime;
-            LOG.error("Unexpected error in set_permission at index {}: {}", index, e.getMessage(), e);
-            return new OperationOutput(OperationOutput.OutputType.LONG, "set_permission", "error", duration, 1);
-        }
-    }
-
-    private OperationOutput executeAppend(int index, long startTime) {
-        FSDataOutputStream out = null;
-        try {
-            Path filePath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
-            byte[] data = generateData(1024);
-            out = fs.append(filePath);
-            out.write(data);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "append", "duration", duration, 1);
-        } catch (IOException e) {
-            LOG.error("Failed to execute append at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "append", "error", duration, 1);
-        } catch (Exception e) {
-            long duration = System.currentTimeMillis() - startTime;
-            LOG.error("Unexpected error in append at index {}: {}", index, e.getMessage(), e);
-            return new OperationOutput(OperationOutput.OutputType.LONG, "append", "error", duration, 1);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    LOG.warn("Failed to close output stream: {}", e.getMessage());
-                }
-            }
-        }
-    }
-
-    private OperationOutput executeCreateSymlink(int index, long startTime) {
-        try {
-            Path targetPath = new Path(baseDir + "/write/" + taskId + "/file_" + index);
-            Path linkPath = new Path(baseDir + "/link_" + taskId + "/link_" + index);
-            fs.createSymlink(targetPath, linkPath, false);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "create_symlink", "duration", duration, 1);
-        } catch (IOException e) {
-            LOG.error("Failed to execute create_symlink at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "create_symlink", "error", duration, 1);
-        } catch (Exception e) {
-            long duration = System.currentTimeMillis() - startTime;
-            LOG.error("Unexpected error in create_symlink at index {}: {}", index, e.getMessage(), e);
-            return new OperationOutput(OperationOutput.OutputType.LONG, "create_symlink", "error", duration, 1);
-        }
-    }
-
-    private OperationOutput executeAppendTruncate(int index, long startTime) {
-        FSDataOutputStream out = null;
-        try {
-            Path filePath = new Path(baseDir + "/append_truncate/" + taskId + "/file_" + index);
-            Path parentDir = new Path(baseDir + "/append_truncate/" + taskId);
-            
-            if (!fs.exists(parentDir)) {
-                fs.mkdirs(parentDir);
-            }
-            
-            if (!fs.exists(filePath)) {
-                byte[] initialData = generateData(1024);
-                out = fs.create(filePath, true);
-                out.write(initialData);
-            } else {
-                out = fs.append(filePath);
-            }
-            
-            int iterations = 10;
-
-            for (int i = 0; i < iterations; i++) {
-                byte[] data = generateData(512);
-                out.write(data);
-                out.flush();
+    private void closeQuietly(FSDataOutputStream out) {
+        if (out != null) {
+            try {
                 out.close();
-                fs.truncate(filePath, 500);
-            }
-            
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "append_truncate", "duration", duration, 1);
-        } catch (IOException e) {
-            LOG.error("Failed to execute append_truncate at index {}: {}", index, e.getMessage(), e);
-            long duration = System.currentTimeMillis() - startTime;
-            return new OperationOutput(OperationOutput.OutputType.LONG, "append_truncate", "error", duration, 1);
-        } catch (Exception e) {
-            long duration = System.currentTimeMillis() - startTime;
-            LOG.error("Unexpected error in append_truncate at index {}: {}", index, e.getMessage(), e);
-            return new OperationOutput(OperationOutput.OutputType.LONG, "append_truncate", "error", duration, 1);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    LOG.warn("Failed to close output stream: {}", e.getMessage());
-                }
+            } catch (IOException e) {
+                LOG.warn("Failed to close output stream: {}", e.getMessage());
             }
         }
+    }
+
+    private void closeQuietly(FSDataInputStream in) {
+        if (in != null) {
+            try {
+                in.close();
+            } catch (IOException e) {
+                LOG.warn("Failed to close input stream: {}", e.getMessage());
+            }
+        }
+    }
+
+    @FunctionalInterface
+    private interface OperationRunnable {
+        void run() throws Exception;
     }
 }
