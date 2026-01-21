@@ -4,6 +4,8 @@ import lombok.Getter;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.fs.Path;
 
+import java.io.File;
+
 public class ArgumentParser {
 
     private Options optList;
@@ -71,8 +73,13 @@ public class ArgumentParser {
         }
 
         public Path getOutputPath() {
-            String path = getValue(ConfigOption.BASE_DIR.getOpt());
-            return new Path(path);
+            String path = getValue(ConfigOption.BASE_DIR.getOpt(), ConfigOption.BASE_DIR.getDefaultValue());
+            return new Path(path + File.separator + "output");
+        }
+
+        public Path getInputPath() {
+            String path = getValue(ConfigOption.BASE_DIR.getOpt(), ConfigOption.BASE_DIR.getDefaultValue());
+            return new Path(path + File.separator + "input");
         }
 
         /**

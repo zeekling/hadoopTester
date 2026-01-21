@@ -83,7 +83,7 @@ public class ArgumentParserTest {
         ArgumentParser argHolder = new ArgumentParser(new String[]{"-baseDir", "/test/dir"});
         ArgumentParser.ParsedOutput parsedOpts = argHolder.parse();
         Path path = parsedOpts.getOutputPath();
-        assertEquals(new Path("/test/dir"), path);
+        assertEquals(new Path("/test/dir/output"), path);
     }
 
     @Test
@@ -91,7 +91,7 @@ public class ArgumentParserTest {
         ArgumentParser argHolder = new ArgumentParser(new String[]{"-baseDir", "/test/dir"});
         ArgumentParser.ParsedOutput parsedOpts = argHolder.parse();
         Path path = parsedOpts.getOutputPath();
-        assertEquals(new Path("/test/dir"), path);
+        assertEquals(new Path("/test/dir/output"), path);
     }
 
     @Test
