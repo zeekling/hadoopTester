@@ -18,7 +18,7 @@ public class ConfigOptionTest {
 
     @Test
     public void testOperationsDefaultValue() {
-        assertEquals("mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate", ConfigOption.OPERATIONS.getDefaultValue());
+        assertEquals("write,read,delete_file,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate", ConfigOption.OPERATIONS.getDefaultValue());
     }
 
     @Test
@@ -34,11 +34,6 @@ public class ConfigOptionTest {
     @Test
     public void testOpsPerMapperDefaultValue() {
         assertEquals(Integer.valueOf(10000), ConfigOption.OPS_PER_MAPPER.getDefaultValue());
-    }
-
-    @Test
-    public void testDirCountDefaultValue() {
-        assertEquals(Integer.valueOf(10), ConfigOption.DIR_COUNT.getDefaultValue());
     }
 
     @Test
@@ -82,11 +77,6 @@ public class ConfigOptionTest {
     }
 
     @Test
-    public void testDirCountCfgOption() {
-        assertEquals("test.dir.count", ConfigOption.DIR_COUNT.getCfgOption());
-    }
-
-    @Test
     public void testMapMemoryMbCfgOption() {
         assertEquals("test.map.memory.mb", ConfigOption.MAP_MEMORY_MB.getCfgOption());
     }
@@ -127,11 +117,6 @@ public class ConfigOptionTest {
     }
 
     @Test
-    public void testDirCountHasArg() {
-        assertTrue(ConfigOption.DIR_COUNT.hasArg());
-    }
-
-    @Test
     public void testMapMemoryMbHasArg() {
         assertTrue(ConfigOption.MAP_MEMORY_MB.hasArg());
     }
@@ -169,11 +154,6 @@ public class ConfigOptionTest {
     @Test
     public void testOpsPerMapperOpt() {
         assertEquals("opsPerMapper", ConfigOption.OPS_PER_MAPPER.getOpt());
-    }
-
-    @Test
-    public void testDirCountOpt() {
-        assertEquals("dirCount", ConfigOption.DIR_COUNT.getOpt());
     }
 
     @Test

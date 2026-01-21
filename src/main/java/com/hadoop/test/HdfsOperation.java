@@ -62,18 +62,12 @@ public class HdfsOperation {
         try {
             long startTime = System.currentTimeMillis();
             switch (operationType) {
-                case "mkdir":
-                    return executeMkdir(index, startTime);
                 case "write":
                     return executeWrite(index, startTime);
                 case "read":
                     return executeRead(index, startTime);
-                case "delete_dir":
-                    return executeDeleteDir(index, startTime);
                 case "delete_file":
                     return executeDeleteFile(index, startTime);
-                case "ls":
-                    return executeList(index, startTime);
                 case "rename":
                     return executeRename(index, startTime);
                 case "get_file_status":
@@ -98,13 +92,6 @@ public class HdfsOperation {
             LOG.error("Error executing operation {} at index {}", operationType, index, e);
             return createErrorOutput(operationType, 0);
         }
-    }
-
-    private OperationOutput executeMkdir(int index, long startTime) {
-        return executeOperation("mkdir", index, startTime, () -> {
-            Path dirPath = buildPath("mkdir", "dir_" + index);
-            fs.mkdirs(dirPath);
-        });
     }
 
     private OperationOutput executeWrite(int index, long startTime) {
@@ -144,24 +131,10 @@ public class HdfsOperation {
         }
     }
 
-    private OperationOutput executeDeleteDir(int index, long startTime) {
-        return executeOperation("delete_dir", index, startTime, () -> {
-            Path dirPath = buildPath("mkdir", "dir_" + index);
-            fs.delete(dirPath, true);
-        });
-    }
-
     private OperationOutput executeDeleteFile(int index, long startTime) {
         return executeOperation("delete_file", index, startTime, () -> {
             Path filePath = buildPath("write", "file_" + index);
             fs.delete(filePath, false);
-        });
-    }
-
-    private OperationOutput executeList(int index, long startTime) {
-        return executeOperation("ls", index, startTime, () -> {
-            Path dirPath = buildPath("write", "");
-            fs.listStatus(dirPath);
         });
     }
 

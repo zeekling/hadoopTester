@@ -4,13 +4,10 @@
 
 ## 功能特性
 
-- 支持 13 种 HDFS 操作类型：
-  - `mkdir` - 创建目录
+- 支持 10 种 HDFS 操作类型：
   - `write` - 写入文件
   - `read` - 读取文件
-  - `delete_dir` - 删除目录
   - `delete_file` - 删除文件
-  - `ls` - 列出文件
   - `rename` - 重命名文件
   - `get_file_status` - 获取文件状态
   - `exists` - 检查文件是否存在
@@ -48,14 +45,14 @@ mvn clean package
 ```bash
 mvn exec:java -Dexec.mainClass="com.hadoop.test.HDFSRpcTest" \
    -Dexec.args="--baseDir /test/hdfsrpc \
-                --maps 10 \
-                --reduces 1 \
-                --mapMemoryMb 1024 \
-                --reduceMemoryMb 512 \
-                --fileSize 10 \
-                --opsPerMapper 1000 \
-                --threadPoolSize 10 \
-                --operations mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate"
+                 --maps 10 \
+                 --reduces 1 \
+                 --mapMemoryMb 1024 \
+                 --reduceMemoryMb 512 \
+                 --fileSize 10 \
+                 --opsPerMapper 1000 \
+                 --threadPoolSize 10 \
+                 --operations write,read,delete_file,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate"
 ```
 
 ### 参数说明
@@ -71,28 +68,24 @@ mvn exec:java -Dexec.mainClass="com.hadoop.test.HDFSRpcTest" \
 | `--fileSize`        | 文件大小（MB）             | 10       |
 | `--opsPerMapper`    | 每个 Mapper 的操作次数       | 10000     |
 | `--fileCount`        | 每个操作的文件数量         | 100       |
-| `--dirCount`         | 每个操作的目录数量         | 10       |
 | `--threadPoolSize`    | 异步操作线程池大小          | 10       |
 | `--help`            | 显示帮助信息              | -         |
 
 **`--operations` 参数的完整默认值为：**
 ```
-mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate
+write,read,delete_file,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate
 ```
 
 ### 操作类型详解
 
 | 操作类型         | 说明                                     |
 |-----------------|------------------------------------------|
-| `mkdir`         | 创建指定目录                            |
 | `write`         | 写入指定大小的随机数据到文件              |
 | `read`          | 读取之前写入的文件内容                   |
-| `delete_dir`     | 删除指定的目录（递归删除）                 |
 | `delete_file`   | 删除指定的文件                            |
-| `ls`            | 列出指定目录下的所有文件                    |
 | `rename`         | 重命名文件                                |
 | `get_file_status`| 获取文件的元数据状态                    |
-| `exists`         | 检查文件或目录是否存在                    |
+| `exists`         | 检查文件是否存在                        |
 | `set_permission` | 设置文件的权限（默认 0644）                |
 | `append`         | 追加 1KB 数据到已有文件                 |
 | `create_symlink`  | 为文件创建符号链接                       |
@@ -109,7 +102,7 @@ mvn exec:java -Dexec.mainClass="com.hadoop.test.HDFSRpcTest" \
                 --reduces 2 \
                 --fileSize 50 \
                 --opsPerMapper 5000 \
-                --operations mkdir,write,read,delete_dir,delete_file,ls"
+                --operations write,read,delete_file,rename,get_file_status,exists"
 ```
 
 #### 仅测试写入操作
@@ -153,7 +146,7 @@ mvn test -Dtest=HdfsOperationTest
 ### 运行特定测试方法
 
 ```bash
-mvn test -Dtest=HdfsOperationTest#testExecuteMkdir
+mvn test -Dtest=HdfsOperationTest#testExecuteWrite
 ```
 
 ## 输出结果
@@ -169,17 +162,15 @@ Operation=<操作名>, Count=<总次数>, errorCount=<错误次数>, totalTime=<
 ### 输出示例
 
 ```
-Operation=mkdir, Count=10000, errorCount=0, totalTime=5000, avgTime=0, minTime=0, maxTime=50
 Operation=write, Count=10000, errorCount=5, totalTime=120000, avgTime=12, minTime=5, maxTime=100
 Operation=read, Count=10000, errorCount=2, totalTime=80000, avgTime=8, minTime=3, maxTime=80
-Operation=delete_dir, Count=10000, errorCount=0, totalTime=6000, avgTime=0, minTime=0, maxTime=60
 Operation=delete_file, Count=10000, errorCount=1, totalTime=4000, avgTime=0, minTime=0, maxTime=40
-Operation=ls, Count=10000, errorCount=0, totalTime=30000, avgTime=3, minTime=1, maxTime=30
+Operation=rename, Count=10000, errorCount=0, totalTime=5000, avgTime=0, minTime=1, maxTime=50
 ```
 
 ### 统计指标说明
 
-- **Operation**: 操作类型（mkdir, write, read, delete_dir, delete_file, ls 等）
+- **Operation**: 操作类型（write, read, delete_file, rename, get_file_status, exists 等）
 - **Count**: 该操作执行的总次数
 - **errorCount**: 该操作执行失败的次数
 - **totalTime(ms)**: 所有成功操作的总耗时（毫秒）
@@ -191,16 +182,16 @@ Operation=ls, Count=10000, errorCount=0, totalTime=30000, avgTime=3, minTime=1, 
 
 ```
 src/main/java/com/hadoop/test/
-├── ArgumentParser.java      # CLI 参数解析
-├── HDFSRpcTest.java        # 主入口，实现 Tool 接口
-├── ConfigOption.java       # 配置选项及默认值
-├── Constants.java          # 应用常量
-├── HdfsOperation.java      # HDFS 操作实现（13 种操作）
-├── SliveMapper.java        # Hadoop Mapper 实现
-├── SliveReducer.java       # Hadoop Reducer 实现
-├── SlivePartitioner.java   # 自定义分区器
-├── DummyInputFormat.java   # 测试用输入格式
-└── OperationOutput.java    # 输出数据结构
+ ├── ArgumentParser.java      # CLI 参数解析
+ ├── HDFSRpcTest.java        # 主入口，实现 Tool 接口
+ ├── ConfigOption.java       # 配置选项及默认值
+ ├── Constants.java          # 应用常量
+ ├── HdfsOperation.java      # HDFS 操作实现（10 种操作）
+ ├── SliveMapper.java        # Hadoop Mapper 实现
+ ├── SliveReducer.java       # Hadoop Reducer 实现
+ ├── SlivePartitioner.java   # 自定义分区器
+ ├── DummyInputFormat.java   # 测试用输入格式
+ └── OperationOutput.java    # 输出数据结构
 ```
 
 ## 技术架构

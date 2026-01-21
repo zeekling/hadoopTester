@@ -96,9 +96,9 @@ public class ArgumentParserTest {
 
     @Test
     public void testParseOperations() throws Exception {
-        ArgumentParser argHolder = new ArgumentParser(new String[]{"-operations", "mkdir,write,read"});
+        ArgumentParser argHolder = new ArgumentParser(new String[]{"-operations", "write,read,delete_file"});
         ArgumentParser.ParsedOutput parsedOpts = argHolder.parse();
-        assertEquals("mkdir,write,read", parsedOpts.getValue(ConfigOption.OPERATIONS.getOpt()));
+        assertEquals("write,read,delete_file", parsedOpts.getValue(ConfigOption.OPERATIONS.getOpt()));
     }
 
     @Test
@@ -106,20 +106,18 @@ public class ArgumentParserTest {
         ArgumentParser argHolder = new ArgumentParser(new String[]{
             "-maps", "5",
             "-baseDir", "/test/dir",
-            "-operations", "mkdir,write",
+            "-operations", "write,read",
             "-fileSize", "20",
             "-fileCount", "50",
-            "-opsPerMapper", "500",
-            "-dirCount", "5"
+            "-opsPerMapper", "500"
         });
         ArgumentParser.ParsedOutput parsedOpts = argHolder.parse();
         assertEquals("5", parsedOpts.getValue(ConfigOption.MAPS.getOpt()));
         assertEquals("/test/dir", parsedOpts.getValue(ConfigOption.BASE_DIR.getOpt()));
-        assertEquals("mkdir,write", parsedOpts.getValue(ConfigOption.OPERATIONS.getOpt()));
+        assertEquals("write,read", parsedOpts.getValue(ConfigOption.OPERATIONS.getOpt()));
         assertEquals("20", parsedOpts.getValue(ConfigOption.FILE_SIZE.getOpt()));
         assertEquals("50", parsedOpts.getValue(ConfigOption.FILE_COUNT.getOpt()));
         assertEquals("500", parsedOpts.getValue(ConfigOption.OPS_PER_MAPPER.getOpt()));
-        assertEquals("5", parsedOpts.getValue(ConfigOption.DIR_COUNT.getOpt()));
     }
 
     @Test

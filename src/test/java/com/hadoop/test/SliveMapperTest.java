@@ -38,7 +38,7 @@ public class SliveMapperTest {
         localFs.mkdirs(testBaseDir);
         
         conf.set(ConfigOption.BASE_DIR.getCfgOption(), testBaseDir.toString());
-        conf.set(ConfigOption.OPERATIONS.getCfgOption(), "mkdir,write");
+        conf.set(ConfigOption.OPERATIONS.getCfgOption(), "write,read");
         conf.setInt(ConfigOption.FILE_SIZE.getCfgOption(), 1);
         conf.setInt(ConfigOption.OPS_PER_MAPPER.getCfgOption(), 10);
         conf.set("mapred.task.id", "attempt_001_0001_m_000000_0");
@@ -87,10 +87,10 @@ public class SliveMapperTest {
     public void testMapOutputFormat() throws IOException {
         Object key = "test_key";
         Object value = "test_value";
-        
+
         mapper.map(key, value, output, reporter);
-        
-        verify(output, atLeastOnce()).collect(argThat(text -> text.toString().equals("mkdir") || text.toString().equals("write")),
+
+        verify(output, atLeastOnce()).collect(argThat(text -> text.toString().equals("write") || text.toString().equals("read")),
                                any(Text.class));
     }
 
@@ -132,7 +132,7 @@ public class SliveMapperTest {
 
     @Test
     public void testMapWithMultipleOperations() throws IOException {
-        conf.set(ConfigOption.OPERATIONS.getCfgOption(), "mkdir,write,read,delete_dir,delete_file,ls");
+        conf.set(ConfigOption.OPERATIONS.getCfgOption(), "write,read,delete_file,rename,get_file_status,exists");
         conf.setInt(ConfigOption.OPS_PER_MAPPER.getCfgOption(), 6);
         mapper.configure(conf);
 
@@ -146,16 +146,16 @@ public class SliveMapperTest {
 
     @Test
     public void testMapWithSingleOperation() throws IOException {
-        conf.set(ConfigOption.OPERATIONS.getCfgOption(), "mkdir");
+        conf.set(ConfigOption.OPERATIONS.getCfgOption(), "write");
         conf.setInt(ConfigOption.OPS_PER_MAPPER.getCfgOption(), 5);
         mapper.configure(conf);
-        
+
         Object key = "test_key";
         Object value = "test_value";
-        
+
         mapper.map(key, value, output, reporter);
-        
-        verify(output, times(5)).collect(argThat(text -> text.toString().equals("mkdir")), any(Text.class));
+
+        verify(output, times(5)).collect(argThat(text -> text.toString().equals("write")), any(Text.class));
     }
 
     @Test
@@ -175,7 +175,7 @@ public class SliveMapperTest {
     public void testConfigureWithThreadPoolSize() throws Exception {
         JobConf testConf = new JobConf();
         testConf.set(ConfigOption.BASE_DIR.getCfgOption(), testBaseDir.toString());
-        testConf.set(ConfigOption.OPERATIONS.getCfgOption(), "mkdir");
+        testConf.set(ConfigOption.OPERATIONS.getCfgOption(), "write");
         testConf.setInt(ConfigOption.THREAD_POOL_SIZE.getCfgOption(), 5);
         testConf.setInt(ConfigOption.FILE_SIZE.getCfgOption(), 1);
         testConf.setInt(ConfigOption.OPS_PER_MAPPER.getCfgOption(), 10);

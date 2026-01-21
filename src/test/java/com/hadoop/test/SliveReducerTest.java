@@ -50,14 +50,14 @@ public class SliveReducerTest {
 
     @Test
     public void testReduceWithSingleValue() throws IOException {
-        Text key = new Text("mkdir");
+        Text key = new Text("write");
         List<Text> values = Arrays.asList(new Text("duration:100"));
 
         reducer.reduce(key, values.iterator(), output, reporter);
 
         assertEquals(1, collectedValues.size());
         String result = collectedValues.get(0).toString();
-        assertTrue(result.contains("Operation=mkdir"));
+        assertTrue(result.contains("Operation=write"));
         assertTrue(result.contains("Count=1"));
         assertTrue(result.contains("totalTime=100"));
         assertTrue(result.contains("avgTime=100"));
@@ -111,7 +111,7 @@ public class SliveReducerTest {
 
     @Test
     public void testReduceWithDifferentOperations() throws IOException {
-        String[] operations = {"mkdir", "write", "read", "delete_dir", "delete_file", "ls"};
+        String[] operations = {"write", "read", "delete_file", "rename", "get_file_status", "exists"};
 
         for (String op : operations) {
             collectedKeys.clear();
@@ -132,25 +132,25 @@ public class SliveReducerTest {
 
     @Test
     public void testReduceWithZeroValues() throws IOException {
-        Text key = new Text("mkdir");
+        Text key = new Text("write");
         List<Text> values = new ArrayList<>();
-        
+
         reducer.reduce(key, values.iterator(), output, reporter);
-        
+
         assertEquals(0, collectedKeys.size());
         verify(output, never()).collect(any(Text.class), any(Text.class));
     }
 
     @Test
     public void testReduceWithInvalidValue() throws IOException {
-        Text key = new Text("mkdir");
+        Text key = new Text("write");
         List<Text> values = Arrays.asList(new Text("duration:100"), new Text("invalid"), new Text("duration:200"));
 
         reducer.reduce(key, values.iterator(), output, reporter);
 
         assertEquals(1, collectedValues.size());
         String result = collectedValues.get(0).toString();
-        assertTrue(result.contains("Operation=mkdir"));
+        assertTrue(result.contains("Operation=write"));
         assertTrue(result.contains("Count=2"));
         assertTrue(result.contains("totalTime=300"));
     }
@@ -194,7 +194,7 @@ public class SliveReducerTest {
 
     @Test
     public void testReduceWithAllZeroDurations() throws IOException {
-        Text key = new Text("mkdir");
+        Text key = new Text("write");
         List<Text> values = Arrays.asList(
             new Text("duration:0"),
             new Text("duration:0"),
@@ -204,7 +204,7 @@ public class SliveReducerTest {
         reducer.reduce(key, values.iterator(), output, reporter);
 
         String result = collectedValues.get(0).toString();
-        assertTrue(result.contains("Operation=mkdir"));
+        assertTrue(result.contains("Operation=write"));
         assertTrue(result.contains("Count=3"));
         assertTrue(result.contains("totalTime=0"));
         assertTrue(result.contains("avgTime=0"));
@@ -226,13 +226,13 @@ public class SliveReducerTest {
 
     @Test
     public void testReduceWithSingleDuration() throws IOException {
-        Text key = new Text("delete_dir");
+        Text key = new Text("delete_file");
         List<Text> values = Arrays.asList(new Text("duration:5"));
 
         reducer.reduce(key, values.iterator(), output, reporter);
 
         String result = collectedValues.get(0).toString();
-        assertTrue(result.contains("Operation=delete_dir"));
+        assertTrue(result.contains("Operation=delete_file"));
         assertTrue(result.contains("Count=1"));
         assertTrue(result.contains("totalTime=5"));
         assertTrue(result.contains("avgTime=5"));

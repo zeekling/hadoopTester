@@ -9,9 +9,9 @@ public class OperationOutputTest {
 
     @Test
     public void testConstructorWithKeyAndValue() {
-        OperationOutput output = new OperationOutput("LONG:mkdir*duration", 100L);
+        OperationOutput output = new OperationOutput("LONG:write*duration", 100L);
         assertEquals(OperationOutput.OutputType.LONG, output.getOutputType());
-        assertEquals("mkdir", output.getOperationType());
+        assertEquals("write", output.getOperationType());
         assertEquals("duration", output.getMeasurementType());
         assertEquals(100L, output.getValue());
         assertEquals(1L, output.getCount());
@@ -19,10 +19,10 @@ public class OperationOutputTest {
 
     @Test
     public void testConstructorWithTextAndValue() {
-        Text key = new Text("INTEGER:ls*count");
+        Text key = new Text("INTEGER:read*count");
         OperationOutput output = new OperationOutput(key, 5);
         assertEquals(OperationOutput.OutputType.INTEGER, output.getOutputType());
-        assertEquals("ls", output.getOperationType());
+        assertEquals("read", output.getOperationType());
         assertEquals("count", output.getMeasurementType());
         assertEquals(5, output.getValue());
         assertEquals(1L, output.getCount());
@@ -50,35 +50,35 @@ public class OperationOutputTest {
 
     @Test
     public void testGetKey() {
-        OperationOutput output = new OperationOutput("LONG:mkdir*duration", 100L);
+        OperationOutput output = new OperationOutput("LONG:write*duration", 100L);
         Text key = output.getKey();
-        assertEquals("LONG:mkdir*duration", key.toString());
+        assertEquals("LONG:write*duration", key.toString());
     }
 
     @Test
     public void testGetOutputValue() {
-        OperationOutput output = new OperationOutput("LONG:mkdir*duration", 100L);
+        OperationOutput output = new OperationOutput("LONG:write*duration", 100L);
         Text value = output.getOutputValue();
         assertEquals("100", value.toString());
     }
 
     @Test
     public void testToString() {
-        OperationOutput output = new OperationOutput("LONG:mkdir*duration", 100L);
+        OperationOutput output = new OperationOutput("LONG:write*duration", 100L);
         String str = output.toString();
-        assertEquals("LONG:mkdir*duration (100)", str);
+        assertEquals("LONG:write*duration (100)", str);
     }
 
     @Test
     public void testGetKeyString() {
-        OperationOutput output = new OperationOutput("INTEGER:ls*count", 5);
+        OperationOutput output = new OperationOutput("INTEGER:read*count", 5);
         Text key = output.getKey();
-        assertEquals("INTEGER:ls*count", key.toString());
+        assertEquals("INTEGER:read*count", key.toString());
     }
 
     @Test
     public void testGetOutputValueText() {
-        OperationOutput output = new OperationOutput("LONG:mkdir*duration", 100L);
+        OperationOutput output = new OperationOutput("LONG:write*duration", 100L);
         Text value = output.getOutputValue();
         assertEquals("100", value.toString());
     }
@@ -103,13 +103,13 @@ public class OperationOutputTest {
 
     @Test
     public void testDefaultCount() {
-        OperationOutput output = new OperationOutput("LONG:mkdir*duration", 100L);
+        OperationOutput output = new OperationOutput("LONG:write*duration", 100L);
         assertEquals(1L, output.getCount());
     }
 
     @Test
     public void testCustomCount() {
-        OperationOutput output = new OperationOutput(OperationOutput.OutputType.LONG, "mkdir", "duration", 100L, 5);
+        OperationOutput output = new OperationOutput(OperationOutput.OutputType.LONG, "write", "duration", 100L, 5);
         assertEquals(5L, output.getCount());
         assertEquals(100L, output.getValue());
     }

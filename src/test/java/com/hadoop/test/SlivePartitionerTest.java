@@ -21,7 +21,7 @@ public class SlivePartitionerTest {
 
     @Test
     public void testGetPartitionWithOneReducer() {
-        Text key = new Text("LONG:mkdir*duration");
+        Text key = new Text("LONG:write*duration");
         Text value = new Text("100");
         int partition = partitioner.getPartition(key, value, 1);
         assertEquals(0, partition);
@@ -29,7 +29,7 @@ public class SlivePartitionerTest {
 
     @Test
     public void testGetPartitionWithMultipleReducers() {
-        Text key = new Text("LONG:mkdir*duration");
+        Text key = new Text("LONG:write*duration");
         Text value = new Text("100");
         int partition = partitioner.getPartition(key, value, 5);
         assertTrue(partition >= 0 && partition < 5);
@@ -37,7 +37,7 @@ public class SlivePartitionerTest {
 
     @Test
     public void testGetPartitionConsistency() {
-        Text key = new Text("LONG:mkdir*duration");
+        Text key = new Text("LONG:write*duration");
         Text value = new Text("100");
         int partition1 = partitioner.getPartition(key, value, 10);
         int partition2 = partitioner.getPartition(key, value, 10);
@@ -46,8 +46,8 @@ public class SlivePartitionerTest {
 
     @Test
     public void testGetPartitionDifferentKeys() {
-        Text key1 = new Text("LONG:mkdir*duration");
-        Text key2 = new Text("LONG:write*duration");
+        Text key1 = new Text("LONG:write*duration");
+        Text key2 = new Text("LONG:read*duration");
         Text value = new Text("100");
         int partition1 = partitioner.getPartition(key1, value, 5);
         int partition2 = partitioner.getPartition(key2, value, 5);
@@ -60,9 +60,9 @@ public class SlivePartitionerTest {
 
     @Test
     public void testGetPartitionWithAllOperationTypes() {
-        String[] operations = {"mkdir", "write", "read", "delete_dir", "delete_file", "ls"};
+        String[] operations = {"write", "read", "delete_file", "rename", "get_file_status", "exists"};
         Text value = new Text("100");
-        
+
         for (String op : operations) {
             Text key = new Text("LONG:" + op + "*duration");
             int partition = partitioner.getPartition(key, value, 3);
@@ -84,7 +84,7 @@ public class SlivePartitionerTest {
 
     @Test
     public void testGetPartitionWithLargeNumPartitions() {
-        Text key = new Text("LONG:mkdir*duration");
+        Text key = new Text("LONG:write*duration");
         Text value = new Text("100");
         int partition = partitioner.getPartition(key, value, 100);
         assertTrue(partition >= 0 && partition < 100);
@@ -92,7 +92,7 @@ public class SlivePartitionerTest {
 
     @Test
     public void testGetPartitionWithZeroPartitions() {
-        Text key = new Text("LONG:mkdir*duration");
+        Text key = new Text("LONG:write*duration");
         Text value = new Text("100");
         try {
             int partition = partitioner.getPartition(key, value, 0);
@@ -111,7 +111,7 @@ public class SlivePartitionerTest {
 
     @Test
     public void testGetPartitionNegativeHashHandling() {
-        Text key = new Text("LONG:mkdir*duration");
+        Text key = new Text("LONG:write*duration");
         Text value = new Text("100");
         int numPartitions = 3;
         int partition = partitioner.getPartition(key, value, numPartitions);

@@ -30,7 +30,7 @@ src/main/java/com/hadoop/test/
 ├── HDFSRpcTest.java        # Main entry point, implements Tool
 ├── ConfigOption.java       # Configuration options with defaults
 ├── Constants.java          # Application constants
-├── HdfsOperation.java      # HDFS operation implementations (13 ops)
+├── HdfsOperation.java      # HDFS operation implementations (10 ops)
 ├── SliveMapper.java        # Hadoop mapper implementation
 ├── SliveReducer.java       # Hadoop reducer implementation
 ├── SlivePartitioner.java   # Custom partitioner
@@ -129,7 +129,7 @@ job.setOutputValueClass(Text.class);
 All operations in HdfsOperation follow this pattern:
 - Method: `execute[OperationName](int index, long startTime)`
 - Returns: `new OperationOutput(OutputType.LONG, "operation_name", "duration", duration, 1)`
-- Operations: mkdir, write, read, delete_dir, delete_file, ls, rename, get_file_status, exists, set_permission, append, create_symlink, append_truncate
+- Operations: write, read, delete_file, rename, get_file_status, exists, set_permission, append, create_symlink, append_truncate
 
 ### Async Operations
 ```java
@@ -152,6 +152,15 @@ doAnswer(invocation -> {
 }).when(output).collect(any(), any(Text.class));
 ```
 
+### Test Directory Setup
+```java
+Path testBaseDir = new Path("target/test-data/testname-" + System.currentTimeMillis());
+FileSystem localFs = FileSystem.getLocal(new Configuration());
+localFs.mkdirs(testBaseDir);
+// test code
+localFs.delete(testBaseDir, true); // in @After with @SuppressWarnings("resource")
+```
+
 ## Development Notes
 
 - Project uses Hadoop MapReduce (old API) with `mapred` package
@@ -160,7 +169,8 @@ doAnswer(invocation -> {
 - Configuration options should have sensible defaults
 - Log at appropriate levels, avoid excessive DEBUG logging
 - Test results use table format with `String.format` for aligned columns
-- Mockito is used with `verify()` and `any()` matchers
-- HDFS operations support 13 different operation types for comprehensive RPC testing
-- When SliveReducer outputs with null key, use `any()` instead of `any(Text.class)` in test mocks
+- Mockito is used with `verify()`, `any()`, `argThat()` matchers
+- HDFS operations support 10 different operation types for comprehensive RPC testing
+- SliveReducer outputs with null key - use `any()` instead of `any(Text.class)` in mocks
 - SliveMapper outputs 1 extra collect call for "total_errors" at the end of each map
+- Use `System.currentTimeMillis()` suffixes for unique test directory names

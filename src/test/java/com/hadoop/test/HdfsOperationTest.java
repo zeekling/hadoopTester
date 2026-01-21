@@ -59,28 +59,6 @@ public class HdfsOperationTest {
     }
 
     @Test
-    public void testExecuteMkdir() {
-        OperationOutput result = operation.execute("mkdir", 0);
-        
-        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
-        assertEquals("mkdir", result.getOperationType());
-        assertEquals("duration", result.getMeasurementType());
-        assertNotNull(result.getValue());
-        assertTrue(Long.parseLong(result.getValue().toString()) >= 0);
-    }
-
-    @Test
-    public void testExecuteMkdirCreatesDirectory() throws IOException {
-        Path dirPath = new Path(testBaseDir + "/mkdir/1/dir_0");
-        assertFalse(localFs.exists(dirPath));
-        
-        operation.execute("mkdir", 0);
-        
-        assertTrue(localFs.exists(dirPath));
-        assertTrue(localFs.isDirectory(dirPath));
-    }
-
-    @Test
     public void testExecuteWrite() {
         OperationOutput result = operation.execute("write", 0);
         
@@ -115,33 +93,16 @@ public class HdfsOperationTest {
     @Test
     public void testExecuteReadAfterWrite() throws IOException {
         Path filePath = new Path(testBaseDir + "/write/1/file_0");
-        
+
         operation.execute("write", 0);
         assertTrue(localFs.exists(filePath));
-        
+
         OperationOutput result = operation.execute("read", 0);
-        
+
         assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
         assertEquals("read", result.getOperationType());
         assertEquals("duration", result.getMeasurementType());
         assertTrue(Long.parseLong(result.getValue().toString()) >= 0);
-    }
-
-    @Test
-    public void testExecuteDeleteDir() throws IOException {
-        Path dirPath = new Path(testBaseDir + "/mkdir/1/dir_0");
-        
-        operation.execute("mkdir", 0);
-        assertTrue(localFs.exists(dirPath));
-        
-        OperationOutput result = operation.execute("delete_dir", 0);
-        
-        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
-        assertEquals("delete_dir", result.getOperationType());
-        assertEquals("duration", result.getMeasurementType());
-        assertTrue(Long.parseLong(result.getValue().toString()) >= 0);
-        
-        assertFalse(localFs.exists(dirPath));
     }
 
     @Test
@@ -157,48 +118,8 @@ public class HdfsOperationTest {
         assertEquals("delete_file", result.getOperationType());
         assertEquals("duration", result.getMeasurementType());
         assertTrue(Long.parseLong(result.getValue().toString()) >= 0);
-        
+
         assertFalse(localFs.exists(filePath));
-    }
-
-    @Test
-    public void testExecuteLs() throws IOException {
-        operation.execute("write", 0);
-        operation.execute("write", 1);
-        operation.execute("write", 2);
-        
-        OperationOutput result = operation.execute("ls", 0);
-        
-        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
-        assertEquals("ls", result.getOperationType());
-        assertTrue((Long) result.getValue() >= 0);
-    }
-
-    @Test
-    public void testExecuteLsReturnsCount() throws IOException {
-        operation.execute("write", 0);
-        operation.execute("write", 1);
-        operation.execute("write", 2);
-
-        Path dirPath = new Path(testBaseDir + "/write/1");
-        int expectedCount = dirPath.getFileSystem(new Configuration()).listStatus(dirPath).length;
-
-        OperationOutput result = operation.execute("ls", 0);
-
-        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
-        assertEquals("ls", result.getOperationType());
-    }
-
-    @Test
-    public void testExecuteLsWithEmptyDirectory() throws Exception {
-        Path dirPath = new Path(testBaseDir + "/write/1");
-        localFs.mkdirs(dirPath);
-
-        OperationOutput result = operation.execute("ls", 0);
-
-        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
-        assertEquals("ls", result.getOperationType());
-        assertTrue((Long) result.getValue() >= 0);
     }
 
     @Test
@@ -214,19 +135,6 @@ public class HdfsOperationTest {
         assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
         assertEquals("error", result.getMeasurementType());
         assertEquals(-1L, result.getValue());
-    }
-
-    @Test
-    public void testExecuteAsyncMkdir() throws Exception {
-        CompletableFuture<OperationOutput> future = operation.executeAsync("mkdir", 0);
-        OperationOutput result = future.get(10, TimeUnit.SECONDS);
-
-        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
-        assertEquals("mkdir", result.getOperationType());
-        assertEquals("duration", result.getMeasurementType());
-
-        Path dirPath = new Path(testBaseDir + "/mkdir/1/dir_0");
-        assertTrue(localFs.exists(dirPath));
     }
 
     @Test
@@ -253,21 +161,6 @@ public class HdfsOperationTest {
     }
 
     @Test
-    public void testExecuteAsyncDeleteDir() throws Exception {
-        operation.execute("mkdir", 0);
-
-        Path dirPath = new Path(testBaseDir + "/mkdir/1/dir_0");
-        assertTrue(localFs.exists(dirPath));
-
-        CompletableFuture<OperationOutput> future = operation.executeAsync("delete_dir", 0);
-        OperationOutput result = future.get(10, TimeUnit.SECONDS);
-
-        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
-        assertEquals("delete_dir", result.getOperationType());
-        assertFalse(localFs.exists(dirPath));
-    }
-
-    @Test
     public void testExecuteAsyncDeleteFile() throws Exception {
         operation.execute("write", 0);
 
@@ -283,28 +176,14 @@ public class HdfsOperationTest {
     }
 
     @Test
-    public void testExecuteAsyncLs() throws Exception {
-        operation.execute("write", 0);
-        operation.execute("write", 1);
-        operation.execute("write", 2);
-
-        CompletableFuture<OperationOutput> future = operation.executeAsync("ls", 0);
-        OperationOutput result = future.get(10, TimeUnit.SECONDS);
-
-        assertEquals(OperationOutput.OutputType.LONG, result.getOutputType());
-        assertEquals("ls", result.getOperationType());
-        assertTrue((Long) result.getValue() >= 0);
-    }
-
-    @Test
     public void testExecuteAsyncMultipleOperations() throws Exception {
-        CompletableFuture<OperationOutput> mkdirFuture = operation.executeAsync("mkdir", 0);
-        CompletableFuture<OperationOutput> writeFuture = operation.executeAsync("write", 0);
+        CompletableFuture<OperationOutput> renameFuture = operation.executeAsync("rename", 0);
+        CompletableFuture<OperationOutput> writeFuture = operation.executeAsync("write", 1);
         CompletableFuture<OperationOutput> readFuture = operation.executeAsync("read", 0);
 
-        CompletableFuture.allOf(mkdirFuture, writeFuture, readFuture).get(30, TimeUnit.SECONDS);
+        CompletableFuture.allOf(renameFuture, writeFuture, readFuture).get(30, TimeUnit.SECONDS);
 
-        assertTrue(mkdirFuture.isDone());
+        assertTrue(renameFuture.isDone());
         assertTrue(writeFuture.isDone());
         assertTrue(readFuture.isDone());
     }
@@ -329,14 +208,14 @@ public class HdfsOperationTest {
     @Test
     public void testExecuteAsyncConsistencyWithSync() throws Exception {
         int index = 100;
-        operation.executeAsync("mkdir", index).get(10, TimeUnit.SECONDS);
-        operation.execute("mkdir", index + 1);
+        operation.executeAsync("write", index).get(10, TimeUnit.SECONDS);
+        operation.execute("write", index + 1);
 
-        Path dir0 = new Path(testBaseDir + "/mkdir/1/dir_" + index);
-        Path dir1 = new Path(testBaseDir + "/mkdir/1/dir_" + (index + 1));
+        Path file0 = new Path(testBaseDir + "/write/1/file_" + index);
+        Path file1 = new Path(testBaseDir + "/write/1/file_" + (index + 1));
 
-        assertTrue(localFs.exists(dir0));
-        assertTrue(localFs.exists(dir1));
+        assertTrue(localFs.exists(file0));
+        assertTrue(localFs.exists(file1));
     }
 
     @Test
@@ -345,14 +224,14 @@ public class HdfsOperationTest {
         List<CompletableFuture<OperationOutput>> futures = new ArrayList<>();
 
         for (int i = 0; i < count; i++) {
-            futures.add(operation.executeAsync("mkdir", i));
+            futures.add(operation.executeAsync("write", i));
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(60, TimeUnit.SECONDS);
 
         for (int i = 0; i < count; i++) {
-            Path dirPath = new Path(testBaseDir + "/mkdir/1/dir_" + i);
-            assertTrue(localFs.exists(dirPath));
+            Path filePath = new Path(testBaseDir + "/write/1/file_" + i);
+            assertTrue(localFs.exists(filePath));
         }
     }
 

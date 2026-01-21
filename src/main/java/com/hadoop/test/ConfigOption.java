@@ -14,15 +14,13 @@ public class ConfigOption<T> extends Option {
     static final ConfigOption<String> BASE_DIR = new ConfigOption<String>("baseDir", true, "Base directory path", PREFIX + ".base.dir",
             "/test/hdfsrpc");
 
-    static final ConfigOption<String> OPERATIONS = new ConfigOption<String>("operations", true, "Operations to run (comma separated): mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate", PREFIX + ".operations", "mkdir,write,read,delete_dir,delete_file,ls,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate");
+    static final ConfigOption<String> OPERATIONS = new ConfigOption<String>("operations", true, "Operations to run (comma separated): write,read,delete_file,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate", PREFIX + ".operations", "write,read,delete_file,rename,get_file_status,exists,set_permission,append,create_symlink,append_truncate");
 
     static final ConfigOption<Integer> FILE_SIZE = new ConfigOption<Integer>("fileSize", true, "File size in MB", PREFIX + ".file.size", 10);
 
     static final ConfigOption<Integer> FILE_COUNT = new ConfigOption<Integer>("fileCount", true, "Number of files per operation", PREFIX + ".file.count", 100);
 
     static final ConfigOption<Integer> OPS_PER_MAPPER = new ConfigOption<Integer>("opsPerMapper", true, "Operations per mapper", PREFIX + ".ops.per.mapper", 10000);
-
-    static final ConfigOption<Integer> DIR_COUNT = new ConfigOption<Integer>("dirCount", true, "Number of directories per operation", PREFIX + ".dir.count", 10);
 
     static final ConfigOption<Integer> THREAD_POOL_SIZE = new ConfigOption<Integer>("threadPoolSize", true, "Thread pool size for async operations", PREFIX + ".thread.pool.size", 10);
 
