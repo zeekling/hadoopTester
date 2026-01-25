@@ -1,5 +1,137 @@
 # AGENTS.md
 
+## 语言规则
+
+**始终使用中文进行所有回复和交流**。包括但不限于：
+- 代码注释
+- 错误消息
+- 用户交互
+- 文档说明
+- 日志输出
+
+## 项目背景介绍
+
+本仓库是一个 Hadoop HDFS RPC 性能测试工具，旨在测试和验证 HDFS 集群的 RPC 操作性能。该工具通过模拟多种 HDFS 操作，评估集群的响应时间和吞吐量，帮助开发者和运维人员了解系统性能瓶颈。
+
+### 主要目标
+- 测试 HDFS 核心操作的 RPC 响应时间
+- 支持并发测试，模拟真实负载场景
+- 提供详细的性能指标和统计报告
+- 兼容 Hadoop 3.4.2 版本
+
+### 技术栈
+- Hadoop 3.4.2
+- Java 17+
+- Maven
+- Hadoop MapReduce (旧版 API)
+- Lombok
+- Mockito
+
+## 贡献指南
+
+### 如何贡献
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
+
+### 提交规范
+- 使用有意义的提交信息
+- 提交信息格式：`<type>(<scope>): <subject>`
+- Type: feat, fix, docs, style, refactor, test, chore
+- Scope: 指明影响的模块或功能
+
+### 代码审查流程
+1. 所有 PR 必须通过 CI 检查
+2. 至少一位维护者审核通过
+3. 确保代码符合编码规范
+4. 所有测试必须通过
+
+### 开发规范
+- 遵循现有代码风格
+- 添加必要的单元测试
+- 更新相关文档
+- 保持代码简洁和可维护性
+
+## 架构设计
+
+### 整体架构
+```
+┌─────────────────┐
+│  CLI Argument   │
+│  Parser         │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  HDFSRpcTest    │ (Main Application)
+│  - Job Setup    │
+│  - Operation    │
+│  - Result       │
+└────────┬────────┘
+         │
+    ┌────┴────┬────────┐
+    ▼         ▼        ▼
+┌─────────┐ ┌────────┐ ┌──────────┐
+│ Mapper  │ │Reducer │ │ HDFS     │
+│         │ │        │ │ Operation│
+└─────────┘ └────────┘ └──────────┘
+```
+
+### 核心模块
+
+#### 1. ArgumentParser
+负责解析命令行参数，提供类型安全的配置获取接口。
+
+#### 2. HDFSRpcTest
+主应用程序，实现 Tool 接口，负责：
+- 配置 Hadoop Job
+- 协调 Mapper 和 Reducer 执行
+- 收集和汇总测试结果
+- 输出格式化报告
+
+#### 3. HdfsOperation
+封装所有 HDFS 操作，支持同步和异步执行：
+- 文件写入/读取
+- 文件删除/重命名
+- 权限设置
+- 符号链接创建
+- 文件存在性检查
+- 文件状态获取
+- 文件追加/截断
+
+#### 4. MapReduce 组件
+- **SliveMapper**: 每个操作作为 map 任务，计算单个操作耗时
+- **SliveReducer**: 汇总所有 map 输出，生成最终统计结果
+- **SlivePartitioner**: 自定义分区策略
+
+### 数据流
+
+```
+1. 用户输入参数
+   ↓
+2. ArgumentParser 解析参数
+   ↓
+3. HDFSRpcTest 创建 HDFS 操作实例
+   ↓
+4. 操作分配给 Mapper 执行
+   ↓
+5. Mapper 记录操作耗时
+   ↓
+6. Reducer 汇总统计
+   ↓
+7. 输出格式化报告
+```
+
+### 测试设计
+- 使用 DummyInputFormat 无需真实输入数据
+- 单元测试使用 Mockito 模拟依赖
+- 集成测试使用本地 HDFS
+- 测试目录自动清理，避免副作用
+
+## 编码指南
+
 This file contains guidelines and commands for agentic coding agents working in this Hadoop testing repository.
 
 ## Build System & Commands
