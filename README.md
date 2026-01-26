@@ -236,3 +236,24 @@ src/main/java/com/hadoop/test/
 ## 许可证
 
 Apache License 2.0
+
+## 变更概览：LoadGeneratorMR 拆分为顶层实现
+
+- 本仓库的 LoadGeneratorMR 内部实现已拆分为顶层类，避免嵌套内部类，相关实现位于以下路径：
+  - src/main/java/com/hadoop/test/loadgenerator/EmptySplit.java
+  - src/main/java/com/hadoop/test/loadgenerator/DummyInputFormat.java
+  - src/main/java/com/hadoop/test/loadgenerator/DummySingleRecordReader.java
+  - src/main/java/com/hadoop/test/loadgenerator/ProgressThread.java
+  - src/main/java/com/hadoop/test/loadgenerator/MapperThatRunsNNLoadGenerator.java
+  - src/main/java/com/hadoop/test/loadgenerator/ReducerThatCollectsLGdata.java
+  - src/main/java/com/hadoop/test/loadgenerator/LGConstants.java
+- LoadGeneratorMR 现在引用上述顶层实现类来运行 MR 任务，避免将逻辑保留在单一内部类中，便于测试和扩展。
+- 运行 MR 的示例：
+  - mvn clean package
+  - mvn exec:java -Dexec.mainClass="com.hadoop.test.loadgenerator.LoadGeneratorMR" -Dexec.args="-mr 2 /path/to/output [其他参数]"
+- 随机性相关配置（seed/distribution/dataSize/iterations/concurrency）通过 ArgumentParser/ConfigOption 管理，提升测试可重复性与覆盖性。
+
+## 新增使用与测试指南（简要）
+- 要运行 MR 作业，请确保 Hadoop 集群就绪，并传入必要的参数。
+- 也可以通过 HDFSRpcTest 入口进行非 MR 的基线测试，具体参数保持与之前一致。
+- AGENTS.md 中新增了“测试随机性与可重复性”分节，详述数据生成的 seed 注入、分布配置以及统计输出等要点。
