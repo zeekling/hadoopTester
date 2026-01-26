@@ -14,12 +14,27 @@
 本仓库是一个 Hadoop HDFS 负载生成工具，使用 Hadoop MapReduce (旧版 API) 生成和上传负载数据到 HDFS 集群。
 
 ### 技术栈
-- Hadoop 3.4.2
-- Java 17
+- Hadoop 3.3.1+
+- Java 8+
 - Maven
 - Lombok 1.18.42
 - JUnit 4.13.2
 - Mockito 4.11.0
+
+## 测试随机性与可重复性
+### 目标
+- 确保性能测试可重复，减少 flaky 场景
+### 做法
+- 注入可控种子 seed 到数据生成与测试执行路径
+- 每次测试输出记录 seed、distribution、dataSize、concurrency、iterations
+- 同一测试在相同 seed 下执行多轮，统计波动性（mean、stddev、P50、P95 等）
+- 参数化随机分布，覆盖多种分布与数据量组合
+- 将断言改为基于统计摘要的判断
+### 配置参数（扩展点）
+- seed、distribution、iterations、concurrency、dataSize
+### 日志与报告
+- 每轮输出包含 seed、distribution、dataSize、concurrency、iterations、elapsedTime、throughput、errorCount
+- 汇总报告包含统计摘要（mean/stddev/p50/p95 等）
 
 ## 构建与测试命令
 
