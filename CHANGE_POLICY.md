@@ -18,4 +18,8 @@
 - 变更记录在 CHANGELOG 中；如可能，提供回滚选项。
 
 备注
-- 若你希望对任何特定任务强制例外，请明确说明。
+ - RULES.md 规则导航
+   - 日常变更应遵循 RULES.md 的开发规范。
+   - RULES.md 提供编码风格、构建、测试、提交等具体准则，请先查看 RULES.md。
+   - 路径：RULES.md 位于仓库根目录。
+   - 互相引用：CHANGE_POLICY.md 与 RULES.md 保持一致性。

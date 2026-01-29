@@ -1,5 +1,11 @@
 # AGENTS.md
 
+## 关系导航
+- CHANGE_POLICY.md：治理变更的高层规则与入口导航，请查看 CHANGE_POLICY.md。
+- RULES.md：开发规范与模板，请查看 RULES.md。
+- AGENTS.md：代理行为边界与使用规范，请查看 AGENTS.md。
+- 快速导航：CHANGE_POLICY.md、RULES.md、AGENTS.md。
+
 ## 语言规则
 
 **始终使用中文进行所有回复和交流**。包括但不限于：
